@@ -217,27 +217,34 @@
     const dados = regiao.filter((l) => !LINHA_INSTRUCAO.test(l.texto));
     if (!dados.length) return { dinamica: [], bruto };
 
-    // Use como referência horizontal a primeira linha real preenchida da tabela:
-    // ela tem cinco células e uma duração na terceira coluna. Isso evita que
-    // títulos centralizados ou exemplos do formulário desloquem as colunas.
-    const RE_DURACAO = /^\s*\d+(?:[.,]\d+)?\s*(?:h\b|horas?\b|minutos?\b|min\b|dias?\b|semanas?\b|meses?\b|aulas?\b)/i;
-    let xsColunas = [];
+    // Estime as cinco colunas pelos inícios de célula mais recorrentes no corpo.
+    // As linhas de instrução podem estar quebradas em várias linhas, mas usam as
+    // mesmas posições horizontais; elas não devem criar registros da tabela.
+    const inicios = [];
     for (const l of dados) {
-      const segs = segmentos(l, 5);
-      const indiceDuracao = segs.findIndex((seg) => RE_DURACAO.test(seg.s));
-      if (indiceDuracao === 2 && segs.length >= 5) {
-        xsColunas = segs.slice(0, 5).map((seg) => seg.x);
-        break;
-      }
+      for (const seg of segmentos(l, 12)) inicios.push(seg.x);
     }
-    if (xsColunas.length !== 5) {
-      xsColunas = ancorasCabecalho(linhas.slice(a + 1, b));
+    inicios.sort((p, q) => p - q);
+    const gruposX = [];
+    for (const px of inicios) {
+      const g = gruposX[gruposX.length - 1];
+      if (g && px - g.centro <= 10) {
+        g.xs.push(px);
+        g.centro = mediana(g.xs);
+      } else gruposX.push({ xs: [px], centro: px });
     }
+    const colunasCorpo = gruposX
+      .map((g) => ({ x: mediana(g.xs), n: g.xs.length }))
+      .sort((p, q) => q.n - p.n)
+      .slice(0, 5)
+      .sort((p, q) => p.x - q.x)
+      .map((g) => g.x);
+    let xsColunas = colunasCorpo.length === 5
+      ? colunasCorpo
+      : ancorasCabecalho(linhas.slice(a + 1, b));
     if (xsColunas.length < 5) {
-      const anchors = ancorasCabecalho(linhas.slice(a + 1, b));
-      if (anchors.length === 5) xsColunas = anchors;
+      return { dinamica: [], bruto, colunasEncontradas: xsColunas.length, linhasIdentificadas: 0 };
     }
-    if (xsColunas.length < 5) return { dinamica: [], bruto, colunasEncontradas: xsColunas.length };
 
     const limites = xsColunas.map((x, i) => i === 0 ? -Infinity : (xsColunas[i - 1] + x) / 2);
     const colunaDe = (x) => {
@@ -295,45 +302,15 @@
       return { dinamica, bruto, instrucaoRemovida: false };
     }
 
-    // Separe linhas da tabela por intervalos verticais. Como as células da primeira
-    // coluna podem ocupar várias linhas, blocos sem espaço continuam o registro anterior.
-    const gaps = [];
-    for (let i = 1; i < dados.length; i++) if (dados[i].pagina === dados[i - 1].pagina) gaps.push(dados[i - 1].y - dados[i].y);
-    const passo = mediana(gaps.filter((g) => g > 0)) || 13;
-    const limiar = passo * 1.55;
-    const blocos = []; let blk = null;
-    dados.forEach((l, i) => {
-      const novo = i === 0 || l.pagina !== dados[i - 1].pagina || (dados[i - 1].y - l.y) > limiar;
-      if (novo) { blk = { pagina: l.pagina, cel: [[], [], [], [], []] }; blocos.push(blk); }
-      for (const seg of segmentos(l, 5)) blk.cel[colunaDe(seg.x)].push({ s: seg.s, x2: seg.x2 });
-    });
-
-    const registros = [];
-    for (const bl of blocos) {
-      const anterior = registros[registros.length - 1];
-      const continuidadeEntrePaginas = anterior
-        && bl.pagina !== anterior.paginaFim
-        && !bl.cel[0].length;
-      if (continuidadeEntrePaginas) {
-        // No formulário, uma linha pode continuar no topo da página seguinte
-        // sem repetir Espaço, Atividade, Duração ou Papel do aluno.
-        bl.cel.forEach((c, j) => anterior.cel[j].push(...c));
-        anterior.paginaFim = bl.pagina;
-      } else {
-        bl.paginaFim = bl.pagina;
-        registros.push(bl);
-      }
-    }
-
-    const dinamica = [];
-    let instrucaoRemovida = false;
-    for (const r of registros) {
-      const cel = r.cel.map((c) => juntarParagrafos(c));
-      const [espaco, atividade, duracao, papelAluno, papelProfessor] = cel;
-      if (cel.some((t) => LINHA_INSTRUCAO.test(t))) { instrucaoRemovida = true; continue; }
-      if (cel.some((t) => t)) dinamica.push({ espaco, atividade, duracao, papelAluno, papelProfessor });
-    }
-    return { dinamica, bruto, instrucaoRemovida };
+    // Não crie linhas com texto instrucional. Se não houver ao menos duas
+    // linhas de aluno detectáveis, deixe a tabela vazia para evitar dados falsos.
+    return {
+      dinamica: [],
+      bruto,
+      colunasEncontradas: xsColunas.length,
+      linhasIdentificadas: iniciosRegistros.length,
+      instrucaoRemovida: true
+    };
   }
 
   /* ---------- Declaração de IA ---------- */
