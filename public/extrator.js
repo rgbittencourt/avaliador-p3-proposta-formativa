@@ -258,15 +258,25 @@
     const blocos = []; let blk = null;
     dados.forEach((l, i) => {
       const novo = i === 0 || l.pagina !== dados[i - 1].pagina || (dados[i - 1].y - l.y) > limiar;
-      if (novo) { blk = { cel: [[], [], [], [], []] }; blocos.push(blk); }
+      if (novo) { blk = { pagina: l.pagina, cel: [[], [], [], [], []] }; blocos.push(blk); }
       for (const seg of segmentos(l, 5)) blk.cel[colunaDe(seg.x)].push({ s: seg.s, x2: seg.x2 });
     });
 
     const registros = [];
     for (const bl of blocos) {
-      if (!bl.cel[0].length && registros.length) {
-        bl.cel.forEach((c, j) => registros[registros.length - 1].cel[j].push(...c));
-      } else registros.push(bl);
+      const anterior = registros[registros.length - 1];
+      const continuidadeEntrePaginas = anterior
+        && bl.pagina !== anterior.paginaFim
+        && !bl.cel[0].length;
+      if (continuidadeEntrePaginas) {
+        // No formulário, uma linha pode continuar no topo da página seguinte
+        // sem repetir Espaço, Atividade, Duração ou Papel do aluno.
+        bl.cel.forEach((c, j) => anterior.cel[j].push(...c));
+        anterior.paginaFim = bl.pagina;
+      } else {
+        bl.paginaFim = bl.pagina;
+        registros.push(bl);
+      }
     }
 
     const dinamica = [];
