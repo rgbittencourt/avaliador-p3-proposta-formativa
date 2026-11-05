@@ -16,7 +16,7 @@ if (process.env.NODE_ENV === 'production' && !APP_PASSWORD) throw new Error('APP
 if (process.env.NODE_ENV === 'production' && !process.env.DATABASE_URL) throw new Error('DATABASE_URL é obrigatória em produção para impedir perda de turmas em armazenamento temporário.');
 
 app.use((req, res, next) => {
-  if (!APP_PASSWORD || req.path === '/api/health' || !req.path.startsWith('/api/')) return next();
+  if (!APP_PASSWORD || req.path === '/api/health' || req.path === '/api/version' || !req.path.startsWith('/api/')) return next();
   const header = req.headers.authorization || '';
   let usuario = '', senha = '';
   try { [usuario, senha] = Buffer.from(header.replace(/^Basic\s+/i, ''), 'base64').toString('utf8').split(':'); } catch { /* ignora */ }
@@ -28,6 +28,11 @@ app.use((req, res, next) => {
 app.use(express.json({ limit: '6mb' }));
 app.get('/', (_req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
 app.get('/api/health', (_req, res) => res.json({ ok: true, openaiConfigurada: Boolean(OPENAI_API_KEY) }));
+app.get('/api/version', (_req, res) => {
+  res.set('Cache-Control', 'no-store');
+  const commit = process.env.RENDER_GIT_COMMIT || 'local';
+  res.json({ version: require('./package.json').version, commit, commitCurto: commit.slice(0, 7) });
+});
 app.use(express.static(path.join(__dirname, 'public')));
 
 const rota = (fn, cod = 400) => async (req, res) => { try { await fn(req, res); } catch (e) { res.status(cod).json({ erro: e.message }); } };
