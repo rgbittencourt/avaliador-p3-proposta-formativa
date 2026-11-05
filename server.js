@@ -26,8 +26,9 @@ app.use((req, res, next) => {
 });
 
 app.use(express.json({ limit: '6mb' }));
-app.use(express.static(path.join(__dirname, 'public')));
+app.get('/', (_req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
 app.get('/api/health', (_req, res) => res.json({ ok: true, openaiConfigurada: Boolean(OPENAI_API_KEY) }));
+app.use(express.static(path.join(__dirname, 'public')));
 
 const rota = (fn, cod = 400) => async (req, res) => { try { await fn(req, res); } catch (e) { res.status(cod).json({ erro: e.message }); } };
 app.get('/api/turmas', rota(async (_q, r) => r.json(await db.listarTurmas()), 500));
