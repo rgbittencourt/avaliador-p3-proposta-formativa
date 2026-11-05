@@ -44,7 +44,7 @@
   function montarLinhas(paginas) {
     const linhas = [];
     paginas.forEach((pg, pi) => {
-      const itens = (pg.itens || []).filter((i) => String(i.s).length).map((i) => ({ s: i.s, x: i.x, x2: i.x + (i.w || 0), y: i.y, h: i.h || 10 }));
+      const itens = (pg.itens || []).filter((i) => String(i.s).trim().length).map((i) => ({ s: i.s, x: i.x, x2: i.x + (i.w || 0), y: i.y, h: i.h || 10 }));
       itens.sort((a, b) => b.y - a.y || a.x - b.x);
       let atual = null;
       for (const it of itens) {
