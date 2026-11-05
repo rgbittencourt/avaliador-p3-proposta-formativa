@@ -168,8 +168,10 @@
   .pdf-modal-topo{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:8px;}
   #pdfPaginaGrande{max-width:100%;max-height:calc(96vh - 80px);width:auto;height:auto;object-fit:contain;align-self:center;border:1px solid var(--cinza-borda);background:#fff;}
   @media(max-width:600px){.pdf-modal{padding:6px}.pdf-modal-conteudo{height:98vh;padding:8px}.pagina-thumb img{height:120px}}
-  .row2.topo{align-items:start;}
-  #turmaSelect{height:38px;}
+  .turma-controls{display:grid;grid-template-columns:minmax(0,1fr);gap:8px;}
+  #turmaSelect{height:38px;width:100%;max-width:460px;}
+  .turma-actions{margin:0;align-items:center;}
+  .turma-actions .btn{white-space:nowrap;}
   .secao-titulo{font-size:0.9rem;font-weight:700;color:var(--azul-titulo);margin:18px 0 4px;border-bottom:1px dashed var(--cinza-borda);padding-bottom:4px;}
 </style>
 </head>
@@ -293,9 +295,9 @@
       <div class="card">
         <h2>Turma</h2>
         <label for="turmaSelect" style="margin-top:0;">Turma ativa</label>
-        <div class="row2 topo">
-          <select id="turmaSelect"></select>
-          <div class="toolbar" style="margin:0;">
+        <div class="turma-controls">
+          <select id="turmaSelect" aria-label="Turma ativa"></select>
+          <div class="toolbar turma-actions">
             <button class="btn secondary" id="btnNovaTurma">Nova turma</button>
             <button class="btn secondary" id="btnRenomear">Renomear</button>
             <button class="btn danger" id="btnExcluirTurma">Excluir turma</button>
