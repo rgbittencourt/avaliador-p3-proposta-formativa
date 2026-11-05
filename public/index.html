@@ -1,0 +1,334 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Avaliador P3 · Proposta Formativa TEDPRO</title>
+<meta name="description" content="Avaliação de propostas formativas com rubrica, feedback e relatório executivo.">
+<meta name="theme-color" content="#1B4F72">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Avaliador P3">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="icon" href="assets/icon-32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<style>
+  :root{
+    color-scheme: light;
+    --azul-titulo:#1B4F72;
+    --azul-header:#1B6B93;
+    --azul-linha:#D6EAF8;
+    --verde:#1E8449;
+    --amarelo:#B7950B;
+    --vermelho:#922B21;
+    --cinza-bg:#F4F6F7;
+    --cinza-borda:#D5DBDB;
+    --texto:#212F3C;
+    --texto-suave:#34495E;
+    --texto-hint:#7B8794;
+    --superficie:#FFFFFF;
+    --alerta-bg:#FDEDEC;
+    --aviso-bg:#FEF9E7;
+    --aviso-texto:#7D6608;
+  }
+  :root[data-theme="dark"]{
+    color-scheme: dark;
+    --azul-titulo:#2E7DB0;
+    --azul-header:#4FA8D8;
+    --azul-linha:#193347;
+    --verde:#3FBF71;
+    --amarelo:#D9A93E;
+    --vermelho:#E06B60;
+    --cinza-bg:#12181D;
+    --cinza-borda:#33404A;
+    --texto:#E8EDF1;
+    --texto-suave:#B9C4CD;
+    --texto-hint:#8FA0AC;
+    --superficie:#1B2329;
+    --alerta-bg:#3A2323;
+    --aviso-bg:#3A331B;
+    --aviso-texto:#E8D48A;
+  }
+  *{box-sizing:border-box;}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    margin:0;background:var(--cinza-bg);color:var(--texto);
+  }
+  header{background:var(--azul-titulo);color:#fff;padding:18px 28px;}
+  .brand{max-width:1180px;margin:0 auto;display:flex;align-items:center;gap:14px;}
+  .brand img{width:54px;height:54px;object-fit:contain;flex:0 0 auto;}
+  header h1{margin:0;font-size:1.4rem;}
+  header p{margin:4px 0 0;font-size:0.9rem;opacity:0.9;}
+  @media (max-width:600px){
+    header{padding:14px 16px;}
+    .brand{align-items:flex-start;gap:10px;}
+    .brand img{width:44px;height:44px;}
+    header h1{font-size:1.08rem;}
+    header p{font-size:0.75rem;line-height:1.35;}
+  }
+  .wrap{max-width:1180px;margin:0 auto;padding:20px;}
+  .grid{display:grid;grid-template-columns:1.15fr 0.85fr;gap:20px;}
+  @media (max-width:960px){.grid{grid-template-columns:1fr;}}
+  .card{
+    background:var(--superficie);border:1px solid var(--cinza-borda);border-radius:10px;
+    padding:18px 20px;margin-bottom:20px;
+  }
+  .card h2{
+    font-size:1rem;color:var(--azul-header);margin:0 0 14px;
+    border-bottom:2px solid var(--azul-linha);padding-bottom:8px;
+  }
+  label{display:block;font-size:0.82rem;font-weight:600;margin:10px 0 4px;color:var(--texto-suave);}
+  input[type=text],input[type=number],textarea,select{
+    width:100%;padding:8px 10px;border:1px solid var(--cinza-borda);border-radius:6px;
+    font-size:0.88rem;font-family:inherit;background:var(--superficie);color:var(--texto);
+  }
+  input.campo-duplicado{
+    border:2px solid var(--vermelho);background:var(--alerta-bg);color:var(--vermelho);
+    font-weight:700;box-shadow:0 0 0 2px color-mix(in srgb,var(--vermelho) 18%,transparent);
+  }
+  textarea{resize:vertical;min-height:70px;}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
+  @media (max-width:600px){.row2,.row3{grid-template-columns:1fr;}}
+  .hint{font-size:0.76rem;color:var(--texto-hint);margin-top:3px;}
+  .checkline{display:flex;align-items:center;gap:8px;margin-top:10px;}
+  .checkline input{width:auto;}
+  .checkline label{margin:0;font-weight:600;}
+
+  fieldset.criterio{border:1px solid var(--cinza-borda);border-radius:8px;padding:12px 14px;margin-bottom:14px;}
+  fieldset.criterio legend{font-weight:700;color:var(--azul-titulo);font-size:0.9rem;padding:0 6px;}
+  .nivel{display:flex;gap:10px;align-items:flex-start;padding:7px 6px;border-radius:6px;cursor:pointer;}
+  .nivel:hover{background:var(--azul-linha);}
+  .nivel input{margin-top:3px;}
+  .nivel .txt{font-size:0.83rem;line-height:1.35;}
+  .nivel .pts{font-weight:700;color:var(--azul-header);white-space:nowrap;font-size:0.8rem;}
+
+  .score-box{
+    display:flex;justify-content:space-between;align-items:center;
+    background:var(--azul-titulo);color:#fff;border-radius:8px;padding:14px 18px;margin-bottom:14px;
+  }
+  .score-box .total{font-size:2rem;font-weight:800;}
+  .score-table{width:100%;border-collapse:collapse;font-size:0.83rem;margin-bottom:10px;}
+  .score-table td{padding:5px 4px;border-bottom:1px solid var(--cinza-linha,#eee);}
+  .badge{display:inline-block;padding:2px 8px;border-radius:20px;color:#fff;font-size:0.72rem;font-weight:700;}
+  .b-max{background:var(--verde);}
+  .b-mid{background:var(--amarelo);}
+  .b-zero{background:var(--vermelho);}
+
+  .alerts{margin-top:8px;}
+  .alert{
+    background:var(--alerta-bg);border:1px solid var(--vermelho);color:var(--vermelho);
+    padding:8px 10px;border-radius:6px;font-size:0.8rem;margin-bottom:6px;
+  }
+  .alert.info{background:var(--aviso-bg);border-color:var(--amarelo);color:var(--aviso-texto);}
+  .no-alert{color:var(--verde);font-size:0.83rem;font-weight:600;}
+
+  textarea#feedbackOut{min-height:220px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.82rem;line-height:1.5;}
+  .coerencia-card{border-top:4px solid var(--azul-header);}
+  .coerencia-card textarea{min-height:190px;font-size:0.84rem;line-height:1.55;}
+  .coerencia-bloco{margin-top:16px;padding-top:14px;border-top:1px dashed var(--cinza-borda);}
+  .coerencia-bloco h3{margin:0 0 4px;color:var(--azul-titulo);font-size:0.92rem;}
+
+  .btn{
+    background:var(--azul-header);color:#fff;border:none;border-radius:6px;
+    padding:9px 16px;font-size:0.85rem;font-weight:600;cursor:pointer;margin-right:8px;margin-top:8px;
+  }
+  .btn:hover{background:var(--azul-titulo);}
+  .btn.secondary{background:var(--superficie);color:var(--azul-header);border:1px solid var(--azul-header);}
+  .btn.secondary:hover{background:var(--azul-linha);}
+  .btn.danger{background:var(--superficie);color:var(--vermelho);border:1px solid var(--vermelho);}
+  .btn.danger:hover{background:var(--alerta-bg);}
+
+  table.roster{width:100%;border-collapse:collapse;font-size:0.8rem;}
+  table.roster th{background:var(--azul-header);color:#fff;text-align:left;padding:7px 8px;}
+  table.roster td{padding:7px 8px;border-bottom:1px solid var(--cinza-borda);}
+  table.roster tr:nth-child(even){background:var(--azul-linha);}
+  table.roster .acoes button{font-size:0.72rem;padding:4px 8px;margin-right:4px;}
+
+  .toolbar{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px;}
+  .muted{color:var(--texto-hint);font-size:0.78rem;}
+  .footer-note{font-size:0.75rem;color:var(--texto-hint);text-align:center;padding:18px 0;}
+  .dim-tabela{width:100%;border-collapse:collapse;font-size:0.8rem;}
+  .dim-tabela th{background:var(--azul-header);color:#fff;text-align:left;padding:6px 6px;font-size:0.74rem;}
+  .dim-tabela td{padding:3px;border-bottom:1px solid var(--cinza-borda);vertical-align:top;}
+  .dim-tabela textarea{min-height:60px;font-size:0.78rem;padding:5px 6px;}
+  .dim-tabela input{font-size:0.78rem;padding:5px 6px;}
+  .nota-obs{width:100%;min-height:54px;margin-top:6px;font-size:0.8rem;}
+  .just{font-size:0.76rem;color:var(--texto-hint);margin-top:4px;}
+  .badge-ok{background:var(--verde);}.badge-pend{background:var(--amarelo);}.badge-err{background:var(--vermelho);}
+  .paginas{display:flex;gap:8px;overflow-x:auto;margin-top:10px;padding-bottom:4px;}
+  .paginas img{height:150px;border:1px solid var(--cinza-borda);border-radius:6px;background:#fff;cursor:zoom-in;}
+  .row2.topo{align-items:start;}
+  #turmaSelect{height:38px;}
+  .secao-titulo{font-size:0.9rem;font-weight:700;color:var(--azul-titulo);margin:18px 0 4px;border-bottom:1px dashed var(--cinza-borda);padding-bottom:4px;}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">
+    <img src="assets/icon-192.png" alt="" width="54" height="54">
+    <div>
+      <h1>Avaliador · P3 Proposta Formativa (TEDPRO)</h1>
+      <p>Especialização em Tecnologias para Educação Profissional e Tecnológica · IFSC Campus Florianópolis-Continente</p>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="grid">
+    <div>
+      <div class="card">
+        <h2>1. Importar proposta do aluno (PDF)</h2>
+        <div class="hint">Selecione o PDF do modelo P3 preenchido. Os campos abaixo são preenchidos pela posição do texto no PDF. Revise sempre antes de avaliar. Se algo vier misturado, use a correção semântica com IA.</div>
+        <input type="file" id="arquivoPdf" accept="application/pdf" style="margin-top:8px;">
+        <div id="importStatus" class="hint" style="margin-top:6px;"></div>
+        <div class="toolbar">
+          <button type="button" class="btn secondary" id="btnCorrigirIA">Corrigir extração com IA</button>
+        </div>
+        <div id="paginasPdf" class="paginas"></div>
+      </div>
+
+      <div class="card">
+        <h2>2. Dados do aluno e da proposta</h2>
+        <div class="row2">
+          <div><label for="nome">Nome completo</label><input type="text" id="nome" placeholder="Nome do aluno"></div>
+          <div><label for="matricula">Número de matrícula</label><input type="text" id="matricula" placeholder="Matrícula"></div>
+        </div>
+        <div id="duplicidadeStatus" class="alert" style="display:none;margin-top:8px;"></div>
+        <div class="row2">
+          <div><label for="orientador">Orientador(a) indicado(a) no documento</label><input type="text" id="orientador" placeholder="Ex.: selecione / nome preenchido"></div>
+          <div><label for="statusCorrecao">Correções solicitadas ao aluno</label>
+            <select id="statusCorrecao"><option value="nenhuma">Nenhuma solicitada</option><option value="aguardando">Aguardando correção do aluno</option><option value="corrigido">Corrigido pelo aluno</option></select></div>
+        </div>
+
+        <label for="desafio">Qual é o seu desafio?</label>
+        <textarea id="desafio"></textarea>
+
+        <div class="secao-titulo">Parte 1: Planejamento</div>
+        <div class="row2">
+          <div><label for="publicoAlvo">Público-alvo</label><textarea id="publicoAlvo"></textarea></div>
+          <div><label for="objetivo">Objetivo da proposta</label><textarea id="objetivo"></textarea></div>
+        </div>
+        <div class="row2">
+          <div><label for="conteudos">Conteúdos que serão trabalhados</label><textarea id="conteudos"></textarea></div>
+          <div><label for="metodologias">Metodologias e estratégias</label><textarea id="metodologias"></textarea></div>
+        </div>
+        <div class="row3">
+          <div><label for="tipo">Tipo da proposta</label><input type="text" id="tipo"></div>
+          <div><label for="cargaHoraria">Carga horária</label><input type="text" id="cargaHoraria"></div>
+          <div><label for="participantes">Número de participantes</label><input type="text" id="participantes"></div>
+        </div>
+        <div class="row2">
+          <div><label for="recursos">Recursos e tecnologias</label><textarea id="recursos"></textarea></div>
+          <div><label for="avaliacaoTexto">Avaliação da aprendizagem</label><textarea id="avaliacaoTexto"></textarea></div>
+        </div>
+
+        <div class="secao-titulo">Parte 2: Dinâmica da proposta</div>
+        <div id="dinInfo" class="hint"></div>
+        <div style="overflow-x:auto;">
+          <table class="dim-tabela">
+            <thead><tr><th style="width:15%">Espaços</th><th style="width:30%">Atividade</th><th style="width:9%">Duração</th><th style="width:22%">Papel do aluno</th><th style="width:20%">Papel do professor</th><th></th></tr></thead>
+            <tbody id="dinBody"></tbody>
+          </table>
+        </div>
+        <div class="toolbar"><button type="button" class="btn secondary" id="btnAddLinha">Adicionar linha</button></div>
+
+        <div class="secao-titulo">Declaração de transparência no uso de IA</div>
+        <div class="row2">
+          <div><label for="iaDeclaracao">Declaração</label>
+            <select id="iaDeclaracao"><option value="">Não identificada</option><option value="Sim">Sim, usou IA</option><option value="Não">Não usou IA</option></select></div>
+          <div></div>
+        </div>
+        <label for="iaDescricao">Descrição do uso de IA</label>
+        <textarea id="iaDescricao"></textarea>
+      </div>
+
+      <div class="card">
+        <h2>3. Rubrica de avaliação</h2>
+        <div style="margin-bottom:16px;padding:14px;border-radius:8px;background:var(--azul-linha);">
+          <div style="font-weight:700;color:var(--azul-titulo);margin-bottom:4px;">Avaliação automática</div>
+          <div class="hint" style="margin-bottom:8px;">Preenche a rubrica com a análise da IA (quando a chave OpenAI está configurada no servidor) ou com a análise local de completude (não avalia o mérito). Sempre revise as notas e as observações.</div>
+          <div class="toolbar"><button type="button" class="btn" id="btnAutoAvaliar">Avaliar automaticamente</button></div>
+          <div id="autoStatus" class="hint" style="margin-top:6px;"></div>
+        </div>
+        <div id="rubricaContainer"></div>
+      </div>
+    </div>
+
+    <div>
+      <div class="card">
+        <h2>Nota e alertas</h2>
+        <div class="score-box">
+          <div><div style="font-size:0.8rem;opacity:0.85;">Nota total</div><div class="total"><span id="totalNota">0</span> / 10</div></div>
+          <div style="text-align:right;font-size:0.78rem;opacity:0.9;" id="modoTag"></div>
+        </div>
+        <table class="score-table" id="scoreTable"></table>
+        <div class="alerts" id="alertsBox"></div>
+        <label for="alertasManuais">Alertas ou observações adicionais <span class="muted">(um por linha)</span></label>
+        <textarea id="alertasManuais" placeholder="Acrescente observações próprias para esta avaliação."></textarea>
+      </div>
+
+      <div class="card">
+        <h2>Feedback gerado</h2>
+        <div class="hint">O texto é totalmente editável e suas alterações são preservadas ao salvar, copiar e exportar. Segue o padrão: saudação, tema, feedback apenas dos critérios abaixo do máximo e despedida.</div>
+        <div class="toolbar">
+          <button class="btn" id="btnFeedback">Atualizar conforme avaliação</button>
+          <button class="btn secondary" id="btnCopiar">Copiar texto</button>
+        </div>
+        <div id="feedbackStatus" class="hint"></div>
+        <textarea id="feedbackOut" placeholder="Gere uma sugestão e edite livremente antes de salvar."></textarea>
+      </div>
+
+      <div class="card">
+        <h2>Turma</h2>
+        <label for="turmaSelect" style="margin-top:0;">Turma ativa</label>
+        <div class="row2 topo">
+          <select id="turmaSelect"></select>
+          <div class="toolbar" style="margin:0;">
+            <button class="btn secondary" id="btnNovaTurma">Nova turma</button>
+            <button class="btn secondary" id="btnRenomear">Renomear</button>
+            <button class="btn danger" id="btnExcluirTurma">Excluir turma</button>
+          </div>
+        </div>
+        <div class="hint">As avaliações ficam vinculadas à turma e podem ser reabertas, alteradas ou complementadas depois.</div>
+        <div id="turmaStatus" style="margin-bottom:6px;"></div>
+        <div class="toolbar">
+          <button class="btn" id="btnSalvar">Salvar aluno na turma</button>
+          <button class="btn secondary" id="btnNova">Nova avaliação</button>
+        </div>
+        <div class="toolbar">
+          <button class="btn secondary" id="btnJson">Exportar turma (JSON)</button>
+          <button class="btn secondary" id="btnCsv">Exportar turma (CSV)</button>
+          <button class="btn secondary" id="btnGit">Salvar cópia no GitHub</button>
+          <button class="btn" id="btnRelatorio">Gerar relatório executivo</button>
+          <button class="btn danger" id="btnLimpar">Limpar turma</button>
+        </div>
+        <div id="githubStatus" class="hint" style="margin-top:4px;"></div>
+        <div style="margin-top:10px;border-top:1px dashed var(--cinza-borda);padding-top:10px;">
+          <label style="margin-top:0;">Importar avaliação(ões) pronta(s) (JSON)</label>
+          <input type="file" id="arquivoJson" accept="application/json">
+          <div id="importJsonStatus" class="hint" style="margin-top:4px;"></div>
+        </div>
+        <div style="overflow-x:auto;margin-top:12px;">
+          <table class="roster">
+            <thead><tr><th>Aluno</th><th>Matrícula</th><th>Nota</th><th>Orientador</th><th>Correções</th><th>Ações</th></tr></thead>
+            <tbody id="rosterBody"></tbody>
+          </table>
+        </div>
+        <div class="muted" id="rosterEmpty" style="margin-top:8px;">Nenhum aluno salvo ainda.</div>
+      </div>
+    </div>
+  </div>
+  <div class="footer-note">As turmas ficam salvas no servidor deste app. O PDF é lido inteiramente no seu navegador; somente a correção com IA envia texto ao servidor.</div>
+</div>
+
+<script src="vendor/pdf.min.js"></script>
+<script>if (window.pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc = 'vendor/pdf.worker.min.js';</script>
+<script src="p3-core.js"></script>
+<script src="extrator.js"></script>
+<script src="app.js"></script>
+<script>
+  if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('/service-worker.js'));
+</script>
+</body>
+</html>
