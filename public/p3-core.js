@@ -249,8 +249,9 @@
   }
 
   /* ---------- feedback no padrão do Prof. Rogério ---------- */
-  function feedbackLocal(d, pontuacoes, observacoes) {
+  function feedbackLocal(d, pontuacoes, observacoes, justificativas) {
     const obs = observacoes || {};
+    const just = justificativas || {};
     const nome = primeiroNome(d.nome);
     const linhas = [];
     linhas.push(`Olá ${nome},`);
@@ -269,21 +270,15 @@
     for (const k of ordemNaoMaxima(pontuacoes)) {
       const c = RUBRICA[k];
       const pts = Number(pontuacoes[k].pontos);
-      let texto = t(obs[k]);
+      let texto = t(obs[k]) || t(just[k]);
       if (!texto) {
         if (k === 'ia' && pts === 1) texto = '';
         else texto = c.niveis.find((n) => n.pontos === pts).desc;
       }
       linhas.push(`Critério ${ORDEM.indexOf(k) + 1}: ${c.label}\n(máximo: ${c.max} ${c.max === 1 ? 'ponto' : 'pontos'} | obtido: ${formatarNota(pts).replace(',0', '').replace('.0', '')} ${pts === 1 ? 'ponto' : 'pontos'})\n${texto}`);
     }
-    // IA com ponto máximo mas descrição sucinta: apenas orientação (sem penalização)
-    if (pontuacoes && pontuacoes.ia && Number(pontuacoes.ia.pontos) === 1 && iaInfo.sucinta && !ordemNaoMaxima(pontuacoes).includes('ia')) {
-      linhas.push('Critério 5: Transparência no uso de Inteligência Artificial\n(máximo: 1 ponto | obtido: 1 ponto)\n' + (t(obs.ia) || 'Você declarou o uso de IA, o que é muito positivo. Fica apenas uma sugestão para trabalhos futuros: quanto mais detalhada for essa declaração, melhor. Descrever quais ferramentas foram usadas, para quê, como ocorreu a interação, quais adaptações você realizou e de que forma o uso contribuiu para o resultado final enriquece a reflexão sobre o processo de autoria.'));
-    }
-
     const soma = total(pontuacoes);
-    const tabela = ORDEM.map((k, i) => `${i + 1}. ${RUBRICA[k].label}: ${formatarNota(Number(pontuacoes && pontuacoes[k] && pontuacoes[k].pontos) || 0).replace(',0', '')} de ${RUBRICA[k].max}`).join('\n');
-    linhas.push(`${tabela}\nNota final: ${formatarNota(soma)}`);
+    linhas.push(`Nota final: ${formatarNota(soma)} de ${formatarNota(NOTA_MAXIMA)}`);
 
     const pendentes = ordemNaoMaxima(pontuacoes);
     linhas.push(pendentes.length
