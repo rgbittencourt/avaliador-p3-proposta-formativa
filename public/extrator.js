@@ -217,25 +217,22 @@
     const dados = regiao.filter((l) => !LINHA_INSTRUCAO.test(l.texto));
     if (!dados.length) return { dinamica: [], bruto };
 
-    // As posições dos títulos podem estar centralizadas dentro das células.
-    // Por isso, use primeiro os inícios reais das células preenchidas no corpo
-    // da tabela; os títulos servem apenas como alternativa quando faltarem dados.
-    const frequencias = new Map();
+    // Use como referência horizontal a primeira linha real preenchida da tabela:
+    // ela tem cinco células e uma duração na terceira coluna. Isso evita que
+    // títulos centralizados ou exemplos do formulário desloquem as colunas.
+    const RE_DURACAO = /^\s*\d+(?:[.,]\d+)?\s*(?:h\b|horas?\b|minutos?\b|min\b|dias?\b|semanas?\b|meses?\b|aulas?\b)/i;
+    let xsColunas = [];
     for (const l of dados) {
-      for (const seg of segmentos(l, 5)) {
-        const x = Math.round(seg.x / 4) * 4;
-        frequencias.set(x, (frequencias.get(x) || 0) + 1);
+      const segs = segmentos(l, 5);
+      const indiceDuracao = segs.findIndex((seg) => RE_DURACAO.test(seg.s));
+      if (indiceDuracao === 2 && segs.length >= 5) {
+        xsColunas = segs.slice(0, 5).map((seg) => seg.x);
+        break;
       }
     }
-    const colunasCorpo = [...frequencias.entries()]
-      .map(([x, n]) => ({ x, n }))
-      .sort((p, q) => q.n - p.n)
-      .slice(0, 5)
-      .sort((p, q) => p.x - q.x)
-      .map((c) => c.x);
-    let xsColunas = colunasCorpo.length === 5
-      ? colunasCorpo
-      : ancorasCabecalho(linhas.slice(a + 1, b));
+    if (xsColunas.length !== 5) {
+      xsColunas = ancorasCabecalho(linhas.slice(a + 1, b));
+    }
     if (xsColunas.length < 5) {
       const anchors = ancorasCabecalho(linhas.slice(a + 1, b));
       if (anchors.length === 5) xsColunas = anchors;
@@ -258,10 +255,11 @@
       for (const seg of segmentos(l, 5)) cel[colunaDe(seg.x)].push({ s: seg.s, x2: seg.x2 });
       return { pagina: l.pagina, y: l.y, cel, texto: l.texto };
     });
-    const iniciosRegistros = linhasCelulas.filter((l) =>
-      l.cel[0].length && l.cel[1].length && l.cel[2].length
-      && !LINHA_INSTRUCAO.test(l.texto)
-    );
+    const ehInicioRegistro = (l) =>
+      l.cel[0].length && l.cel[1].length
+      && RE_DURACAO.test(juntarParagrafos(l.cel[2]))
+      && !LINHA_INSTRUCAO.test(l.texto);
+    const iniciosRegistros = linhasCelulas.filter(ehInicioRegistro);
 
     if (iniciosRegistros.length >= 2) {
       const registros = [];
@@ -272,8 +270,7 @@
           paginaAtual = linha.pagina;
           registroAtual = null;
         }
-        const inicio = linha.cel[0].length && linha.cel[1].length && linha.cel[2].length
-          && !LINHA_INSTRUCAO.test(linha.texto);
+        const inicio = ehInicioRegistro(linha);
         if (inicio) {
           registroAtual = { pagina: linha.pagina, cel: [[], [], [], [], []] };
           registros.push(registroAtual);
