@@ -1,0 +1,29 @@
+{
+  "name": "avaliador-p3-proposta-formativa",
+  "version": "1.0.0",
+  "description": "Avaliador da P3 (Proposta formativa) do TEDPRO/IFSC",
+  "main": "server.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "test": "node --test test/core.test.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^18.0.9",
+    "express": "^5.3.0",
+    "pg": "^8.23.1"
+  },
+  "devDependencies": {
+    "pdfjs-dist": "^3.11.174"
+  },
+  "private": true,
+  "engines": {
+    "node": ">=18"
+  }
+}
