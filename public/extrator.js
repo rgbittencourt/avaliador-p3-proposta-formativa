@@ -154,7 +154,32 @@
   }
 
   /* ---------- Parte 2 (tabela) ---------- */
-  const LINHA_INSTRUCAO = /(^Exemplos?:|Indique que atividades|Indique a dura[çc][ãa]o|O que os alunos fazem|O que o professor faz)/i;
+  const LINHA_INSTRUCAO = /(Exemplos?:|Indique que atividades|Indique a dura[çc][ãa]o|O que os alunos fazem|O que o professor faz|Considere a mediação|Se há mais de um professor)/i;
+  const ROTULOS_COLUNAS = [
+    /^ESPA[ÇC]OS\b/i,
+    /^ATIVIDADE\b/i,
+    /^DURA[ÇC][ÃA]O\b/i,
+    /^PAPEL\s+DO\s+ALUNO\b/i,
+    /^(?:PAPEL\s+DO\s+PROFESSOR|O\s+QUE\s+O\s+PROFESSOR)\b/i
+  ];
+
+  function ancorasCabecalho(regiao) {
+    const linha = regiao.find((l) => /ESPA[ÇC]OS/i.test(l.texto) && /ATIVIDADE/i.test(l.texto));
+    if (!linha) return [];
+    const achadas = Array(5).fill(null);
+    const partes = segmentos(linha, 12);
+    for (const parte of partes) {
+      const j = ROTULOS_COLUNAS.findIndex((re) => re.test(parte.s));
+      if (j >= 0 && achadas[j] == null) achadas[j] = parte.x;
+    }
+    if (achadas.some((x) => x == null)) {
+      for (const it of [...linha.itens].sort((a, b) => a.x - b.x)) {
+        const j = ROTULOS_COLUNAS.findIndex((re) => re.test(it.s.trim()));
+        if (j >= 0 && achadas[j] == null) achadas[j] = it.x;
+      }
+    }
+    return achadas.every((x) => x != null) ? achadas : [];
+  }
 
   function extrairParte2(linhas) {
     const a = indiceLinha(linhas, /PARTE\s*2/i);
@@ -166,37 +191,57 @@
     const bruto = regiao.map((l) => l.texto).join('\n');
     if (!regiao.length) return { dinamica: [], bruto };
 
-    // colunas: agrupa o x inicial dos segmentos
-    const inicios = [];
-    for (const l of regiao) segmentos(l, 5).forEach((s) => inicios.push(s.x));
-    inicios.sort((p, q) => p - q);
-    const grupos = [];
-    for (const x of inicios) {
-      const g = grupos[grupos.length - 1];
-      if (g && x - g.fim <= 9) { g.xs.push(x); g.fim = x; } else grupos.push({ xs: [x], fim: x });
-    }
-    const colunas = grupos.map((g) => ({ x: mediana(g.xs), n: g.xs.length })).sort((p, q) => q.n - p.n).slice(0, 5).sort((p, q) => p.x - q.x);
-    if (colunas.length < 5) return { dinamica: [], bruto, colunasEncontradas: colunas.length };
-    const limites = colunas.map((c, i) => (i === 0 ? -Infinity : (colunas[i - 1].x + c.x) / 2 - 4));
-    const colunaDe = (x) => { let c = 0; for (let j = 0; j < 5; j++) if (x >= limites[j]) c = j; return c; };
+    // Remova cabeçalhos e instruções do modelo antes de inferir colunas e linhas.
+    // Isso impede que os exemplos do formulário distorçam a posição das células preenchidas.
+    const dados = regiao.filter((l) => !LINHA_INSTRUCAO.test(l.texto));
+    if (!dados.length) return { dinamica: [], bruto };
 
-    // 1) blocos separados por vão vertical grande (ou troca de página)
+    // Prefira as posições dos títulos das cinco colunas. Se o PDF não os expuser
+    // separadamente, estime as colunas pela repetição dos inícios das células.
+    let xsColunas = ancorasCabecalho(linhas.slice(a + 1, b));
+    if (xsColunas.length !== 5) {
+      const inicios = [];
+      for (const l of dados) segmentos(l, 5).forEach((seg) => inicios.push(seg.x));
+      inicios.sort((p, q) => p - q);
+      const grupos = [];
+      for (const x of inicios) {
+        const g = grupos[grupos.length - 1];
+        if (g && x - g.centro <= 8) {
+          g.xs.push(x);
+          g.centro = mediana(g.xs);
+        } else grupos.push({ xs: [x], centro: x });
+      }
+      const colunas = grupos.map((g) => ({ x: mediana(g.xs), n: g.xs.length }))
+        .sort((p, q) => q.n - p.n).slice(0, 5).sort((p, q) => p.x - q.x);
+      xsColunas = colunas.map((c) => c.x);
+    }
+    if (xsColunas.length < 5) return { dinamica: [], bruto, colunasEncontradas: xsColunas.length };
+
+    const limites = xsColunas.map((x, i) => i === 0 ? -Infinity : (xsColunas[i - 1] + x) / 2);
+    const colunaDe = (x) => {
+      let c = 0;
+      for (let j = 1; j < 5; j++) if (x >= limites[j]) c = j;
+      return c;
+    };
+
+    // Separe linhas da tabela por intervalos verticais. Como as células da primeira
+    // coluna podem ocupar várias linhas, blocos sem espaço continuam o registro anterior.
     const gaps = [];
-    for (let i = 1; i < regiao.length; i++) if (regiao[i].pagina === regiao[i - 1].pagina) gaps.push(regiao[i - 1].y - regiao[i].y);
+    for (let i = 1; i < dados.length; i++) if (dados[i].pagina === dados[i - 1].pagina) gaps.push(dados[i - 1].y - dados[i].y);
     const passo = mediana(gaps.filter((g) => g > 0)) || 13;
-    const limiar = passo * 1.45;
+    const limiar = passo * 1.55;
     const blocos = []; let blk = null;
-    regiao.forEach((l, i) => {
-      const novo = i === 0 || l.pagina !== regiao[i - 1].pagina || (regiao[i - 1].y - l.y) > limiar;
+    dados.forEach((l, i) => {
+      const novo = i === 0 || l.pagina !== dados[i - 1].pagina || (dados[i - 1].y - l.y) > limiar;
       if (novo) { blk = { cel: [[], [], [], [], []] }; blocos.push(blk); }
       for (const seg of segmentos(l, 5)) blk.cel[colunaDe(seg.x)].push({ s: seg.s, x2: seg.x2 });
     });
 
-    // 2) um bloco sem texto na coluna "Espaços" é continuação da linha anterior
     const registros = [];
     for (const bl of blocos) {
-      if (!bl.cel[0].length && registros.length) { bl.cel.forEach((c, j) => registros[registros.length - 1].cel[j].push(...c)); }
-      else registros.push(bl);
+      if (!bl.cel[0].length && registros.length) {
+        bl.cel.forEach((c, j) => registros[registros.length - 1].cel[j].push(...c));
+      } else registros.push(bl);
     }
 
     const dinamica = [];
@@ -204,7 +249,7 @@
     for (const r of registros) {
       const cel = r.cel.map((c) => juntarParagrafos(c));
       const [espaco, atividade, duracao, papelAluno, papelProfessor] = cel;
-      if (cel.filter((t) => LINHA_INSTRUCAO.test(t)).length >= 2 || /^Exemplos?:/i.test(espaco)) { instrucaoRemovida = true; continue; }
+      if (cel.some((t) => LINHA_INSTRUCAO.test(t))) { instrucaoRemovida = true; continue; }
       if (cel.some((t) => t)) dinamica.push({ espaco, atividade, duracao, papelAluno, papelProfessor });
     }
     return { dinamica, bruto, instrucaoRemovida };
