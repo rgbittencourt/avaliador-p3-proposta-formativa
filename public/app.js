@@ -153,6 +153,8 @@
         const nivel = C.RUBRICA[k].niveis.find((n) => n.pontos === estado.pontuacoes[k]);
         estado.justificativas[k] = String(item.justificativa || nivel?.desc || '');
       });
+      estado.justificativas.abertura = String(r.mensagemInicial || '');
+      estado.justificativas.encerramento = String(r.mensagemFinal || '');
       estado.modo = r.modo || 'local';
       marcarRubrica();
       if (r.alertas && r.alertas.length) $('alertasManuais').value = r.alertas.join('\n');
