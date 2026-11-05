@@ -158,6 +158,15 @@
   .badge-ok{background:var(--verde);}.badge-pend{background:var(--amarelo);}.badge-err{background:var(--vermelho);}
   .paginas{display:flex;gap:8px;overflow-x:auto;margin-top:10px;padding-bottom:4px;}
   .paginas img{height:150px;border:1px solid var(--cinza-borda);border-radius:6px;background:#fff;cursor:zoom-in;}
+  .pagina-thumb{padding:0;border:0;background:transparent;cursor:zoom-in;border-radius:6px;}
+  .pagina-thumb img{display:block;height:150px;border:1px solid var(--cinza-borda);border-radius:6px;background:#fff;}
+  .pagina-thumb:focus-visible{outline:3px solid var(--azul-header);outline-offset:3px;}
+  .pdf-modal[hidden]{display:none;}
+  .pdf-modal{position:fixed;inset:0;z-index:1000;background:rgba(10,18,24,.82);display:flex;align-items:center;justify-content:center;padding:12px;}
+  .pdf-modal-conteudo{width:min(1100px,100%);height:min(96vh,100%);background:var(--superficie);border-radius:10px;padding:12px;display:flex;flex-direction:column;box-shadow:0 12px 48px rgba(0,0,0,.35);}
+  .pdf-modal-topo{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:8px;}
+  #pdfPaginaGrande{max-width:100%;max-height:calc(96vh - 80px);width:auto;height:auto;object-fit:contain;align-self:center;border:1px solid var(--cinza-borda);background:#fff;}
+  @media(max-width:600px){.pdf-modal{padding:6px}.pdf-modal-conteudo{height:98vh;padding:8px}.pagina-thumb img{height:120px}}
   .row2.topo{align-items:start;}
   #turmaSelect{height:38px;}
   .secao-titulo{font-size:0.9rem;font-weight:700;color:var(--azul-titulo);margin:18px 0 4px;border-bottom:1px dashed var(--cinza-borda);padding-bottom:4px;}
@@ -320,6 +329,13 @@
     </div>
   </div>
   <div class="footer-note">As turmas ficam salvas no servidor deste app. O PDF é lido inteiramente no seu navegador; somente a correção com IA envia texto ao servidor.</div>
+</div>
+
+<div id="pdfModal" class="pdf-modal" role="dialog" aria-modal="true" aria-labelledby="pdfModalTitulo" hidden>
+  <div class="pdf-modal-conteudo">
+    <div class="pdf-modal-topo"><strong id="pdfModalTitulo">Visualização ampliada da proposta</strong><span id="pdfModalStatus" class="hint"></span><button type="button" class="btn secondary" id="pdfModalClose" aria-label="Fechar visualização">Fechar</button></div>
+    <canvas id="pdfPaginaGrande"></canvas>
+  </div>
 </div>
 
 <script src="vendor/pdf.min.js"></script>
