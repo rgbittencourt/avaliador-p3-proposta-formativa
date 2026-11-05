@@ -202,6 +202,8 @@
     return achadas.every((x) => x != null) ? achadas : [];
   }
 
+  const RE_DURACAO = /^\s*\d+(?:[.,]\d+)?\s*(?:horas?|h|minutos?|min)\s*$/i;
+
   function extrairParte2(linhas) {
     const a = indiceLinha(linhas, /PARTE\s*2/i);
     if (a < 0) return { dinamica: [], bruto: '' };
