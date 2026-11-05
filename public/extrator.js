@@ -167,15 +167,36 @@
     const linha = regiao.find((l) => /ESPA[ÇC]OS/i.test(l.texto) && /ATIVIDADE/i.test(l.texto));
     if (!linha) return [];
     const achadas = Array(5).fill(null);
-    const partes = segmentos(linha, 12);
-    for (const parte of partes) {
-      const j = ROTULOS_COLUNAS.findIndex((re) => re.test(parte.s));
-      if (j >= 0 && achadas[j] == null) achadas[j] = parte.x;
+
+    // PDF.js pode devolver os cinco títulos como fragmentos separados ou como
+    // um único item de texto. Procure cada rótulo em todos os itens, preservando
+    // a posição horizontal real (e não apenas o primeiro rótulo de cada segmento).
+    const padroes = [
+      /ESPA[ÇC]OS/i,
+      /ATIVIDADE/i,
+      /DURA[ÇC][ÃA]O/i,
+      /PAPEL\s+DO\s+ALUNO/i,
+      /PAPEL\s+DO\s+PROFESSOR/i
+    ];
+    for (const it of [...linha.itens].sort((x, y) => x.x - y.x)) {
+      const texto = String(it.s || '').normalize('NFC');
+      for (let j = 0; j < padroes.length; j++) {
+        if (achadas[j] != null) continue;
+        const m = padroes[j].exec(texto);
+        if (!m) continue;
+        // Quando vários títulos vierem num mesmo item, estima a posição de
+        // cada um dentro do fragmento usando sua largura e posição no texto.
+        const proporcao = texto.length ? m.index / texto.length : 0;
+        achadas[j] = it.x + (it.w || 0) * proporcao;
+      }
     }
-    if (achadas.some((x) => x == null)) {
-      for (const it of [...linha.itens].sort((a, b) => a.x - b.x)) {
-        const j = ROTULOS_COLUNAS.findIndex((re) => re.test(it.s.trim()));
-        if (j >= 0 && achadas[j] == null) achadas[j] = it.x;
+
+    // Alguns PDFs quebram "Papel do aluno/professor" em vários itens.
+    // Nesse caso, recupere a posição a partir dos segmentos visuais agrupados.
+    const partes = segmentos(linha, 4);
+    for (const parte of partes) {
+      for (let j = 0; j < padroes.length; j++) {
+        if (achadas[j] == null && padroes[j].test(parte.s)) achadas[j] = parte.x;
       }
     }
     return achadas.every((x) => x != null) ? achadas : [];
