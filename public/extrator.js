@@ -249,6 +249,55 @@
       return c;
     };
 
+    // Nesta tabela, cada nova linha tem Espaço, Atividade e Duração
+    // preenchidos na mesma linha-base. Use essa combinação para marcar o início
+    // de um registro e não confunda a continuação isolada da página seguinte
+    // com uma quinta linha.
+    const linhasCelulas = dados.map((l) => {
+      const cel = [[], [], [], [], []];
+      for (const seg of segmentos(l, 5)) cel[colunaDe(seg.x)].push({ s: seg.s, x2: seg.x2 });
+      return { pagina: l.pagina, y: l.y, cel, texto: l.texto };
+    });
+    const iniciosRegistros = linhasCelulas.filter((l) =>
+      l.cel[0].length && l.cel[1].length && l.cel[2].length
+      && !LINHA_INSTRUCAO.test(l.texto)
+    );
+
+    if (iniciosRegistros.length >= 2) {
+      const registros = [];
+      let registroAtual = null;
+      let paginaAtual = null;
+      for (const linha of linhasCelulas) {
+        if (linha.pagina !== paginaAtual) {
+          paginaAtual = linha.pagina;
+          registroAtual = null;
+        }
+        const inicio = linha.cel[0].length && linha.cel[1].length && linha.cel[2].length
+          && !LINHA_INSTRUCAO.test(linha.texto);
+        if (inicio) {
+          registroAtual = { pagina: linha.pagina, cel: [[], [], [], [], []] };
+          registros.push(registroAtual);
+        }
+
+        if (registroAtual) {
+          linha.cel.forEach((c, j) => registroAtual.cel[j].push(...c));
+        } else if (registros.length
+          && linha.cel[4].length
+          && !linha.cel[0].length && !linha.cel[1].length
+          && !linha.cel[2].length && !linha.cel[3].length) {
+          // Continuação no topo da página seguinte: somente Papel do professor.
+          linha.cel[4].forEach((item) => registros[registros.length - 1].cel[4].push(item));
+        }
+      }
+
+      const dinamica = registros.map((r) => {
+        const [espaco, atividade, duracao, papelAluno, papelProfessor] =
+          r.cel.map((c) => juntarParagrafos(c));
+        return { espaco, atividade, duracao, papelAluno, papelProfessor };
+      });
+      return { dinamica, bruto, instrucaoRemovida: false };
+    }
+
     // Separe linhas da tabela por intervalos verticais. Como as células da primeira
     // coluna podem ocupar várias linhas, blocos sem espaço continuam o registro anterior.
     const gaps = [];
