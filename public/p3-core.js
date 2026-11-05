@@ -256,9 +256,7 @@
     const tema = limparDesafio(d.desafio);
     const linhas = [];
     linhas.push(`Olá ${nome},`);
-    linhas.push(tema
-      ? `Li sua proposta com atenção e agradeço por compartilhar o planejamento sobre ${tema}. Abaixo deixo meus comentários para você entender o que funcionou bem e, quando necessário, o que pode ser aprimorado.`
-      : 'Li sua proposta com atenção e agradeço por compartilhar o seu trabalho. Abaixo deixo meus comentários para você entender o que funcionou bem e, quando necessário, o que pode ser aprimorado.');
+    linhas.push(t(just.abertura) || 'Li sua proposta com atenção. A seguir, compartilho minha avaliação e os ajustes que podem ajudar a desenvolver o trabalho.');
 
     const avisos = [];
     if (orientadorVazio(d.orientador)) avisos.push('observei que o campo Orientador(a) do seu documento não foi selecionado. Sou eu, Prof. Rogério Gonçalves Bittencourt, o seu orientador. Por favor, preencha esse dado antes da entrega final.');
@@ -284,9 +282,9 @@
     linhas.push(`Nota final: ${formatarNota(soma)} de ${formatarNota(NOTA_MAXIMA)}`);
 
     const pendentes = ordemNaoMaxima(pontuacoes);
-    linhas.push(pendentes.length
+    linhas.push(t(just.encerramento) || (pendentes.length
       ? `${nome}, sua proposta já tem uma base importante. Os comentários acima apontam ajustes que podem deixá-la mais clara e consistente. Agradeço o cuidado dedicado ao trabalho e espero que essas sugestões ajudem no próximo passo.`
-      : `${nome}, os diferentes elementos da sua proposta se articulam com consistência e atendem plenamente ao que foi solicitado. Parabéns pelo trabalho cuidadoso e pela dedicação.`);
+      : `${nome}, os diferentes elementos da sua proposta se articulam com consistência e atendem plenamente ao que foi solicitado. Parabéns pelo trabalho cuidadoso e pela dedicação.`));
     linhas.push('Um abraço,\nProf. Rogério');
     return semTravessao(linhas.join('\n\n'));
   }
