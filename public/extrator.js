@@ -208,13 +208,13 @@
     let b = indiceLinha(linhas, /Declara[çc][ãa]o de transpar[êe]ncia/i, a + 1);
     if (b < 0) b = linhas.length;
     let regiao = linhas.slice(a + 1, b);
-    regiao = regiao.filter((l) => !(/ESPA[ÇC]OS/i.test(l.texto) && /ATIVIDADE/i.test(l.texto)));
+    // Preserve o cabeçalho aqui: ele fornece as posições das cinco colunas.
     const bruto = regiao.map((l) => l.texto).join('\n');
     if (!regiao.length) return { dinamica: [], bruto };
 
     // Remova cabeçalhos e instruções do modelo antes de inferir colunas e linhas.
     // Isso impede que os exemplos do formulário distorçam a posição das células preenchidas.
-    const dados = regiao.filter((l) => !LINHA_INSTRUCAO.test(l.texto));
+    const dados = regiao.filter((l) => !(/ESPA[ÇC]OS/i.test(l.texto) && /ATIVIDADE/i.test(l.texto)) && !LINHA_INSTRUCAO.test(l.texto));
     if (!dados.length) return { dinamica: [], bruto };
 
     // As posições fixas vêm dos cinco cabeçalhos do próprio modelo. O texto
