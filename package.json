@@ -1,6 +1,6 @@
 {
   "name": "avaliador-p3-proposta-formativa",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Avaliador da P3 (Proposta formativa) do TEDPRO/IFSC",
   "main": "server.js",
   "directories": {
