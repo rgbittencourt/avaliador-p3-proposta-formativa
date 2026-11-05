@@ -253,9 +253,12 @@
     const obs = observacoes || {};
     const just = justificativas || {};
     const nome = primeiroNome(d.nome);
+    const tema = limparDesafio(d.desafio);
     const linhas = [];
     linhas.push(`Olá ${nome},`);
-    linhas.push('Obrigado por compartilhar a sua proposta formativa. É nítido o esforço de transformar o seu desafio em uma jornada de aprendizagem pensada para o público que você pretende formar. Parabéns pelo trabalho e pela dedicação!');
+    linhas.push(tema
+      ? `Li sua proposta com atenção e agradeço por compartilhar o planejamento sobre ${tema}. Abaixo deixo meus comentários para você entender o que funcionou bem e, quando necessário, o que pode ser aprimorado.`
+      : 'Li sua proposta com atenção e agradeço por compartilhar o seu trabalho. Abaixo deixo meus comentários para você entender o que funcionou bem e, quando necessário, o que pode ser aprimorado.');
 
     const avisos = [];
     if (orientadorVazio(d.orientador)) avisos.push('observei que o campo Orientador(a) do seu documento não foi selecionado. Sou eu, Prof. Rogério Gonçalves Bittencourt, o seu orientador. Por favor, preencha esse dado antes da entrega final.');
@@ -282,8 +285,8 @@
 
     const pendentes = ordemNaoMaxima(pontuacoes);
     linhas.push(pendentes.length
-      ? `${nome}, sua proposta tem uma base consistente e os pontos de melhoria são pontuais. Com os ajustes indicados, ela fica ainda mais completa. Continue com essa dedicação!`
-      : `${nome}, sua proposta é completa, coerente e bem estruturada. Parabéns pela qualidade do trabalho e pela dedicação!`);
+      ? `${nome}, sua proposta já tem uma base importante. Os comentários acima apontam ajustes que podem deixá-la mais clara e consistente. Agradeço o cuidado dedicado ao trabalho e espero que essas sugestões ajudem no próximo passo.`
+      : `${nome}, os diferentes elementos da sua proposta se articulam com consistência e atendem plenamente ao que foi solicitado. Parabéns pelo trabalho cuidadoso e pela dedicação.`);
     linhas.push('Um abraço,\nProf. Rogério');
     return semTravessao(linhas.join('\n\n'));
   }
