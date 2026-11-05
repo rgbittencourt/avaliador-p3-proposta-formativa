@@ -217,24 +217,28 @@
     const dados = regiao.filter((l) => !LINHA_INSTRUCAO.test(l.texto));
     if (!dados.length) return { dinamica: [], bruto };
 
-    // Prefira as posições dos títulos das cinco colunas. Se o PDF não os expuser
-    // separadamente, estime as colunas pela repetição dos inícios das células.
-    let xsColunas = ancorasCabecalho(linhas.slice(a + 1, b));
-    if (xsColunas.length !== 5) {
-      const inicios = [];
-      for (const l of dados) segmentos(l, 5).forEach((seg) => inicios.push(seg.x));
-      inicios.sort((p, q) => p - q);
-      const grupos = [];
-      for (const x of inicios) {
-        const g = grupos[grupos.length - 1];
-        if (g && x - g.centro <= 8) {
-          g.xs.push(x);
-          g.centro = mediana(g.xs);
-        } else grupos.push({ xs: [x], centro: x });
+    // As posições dos títulos podem estar centralizadas dentro das células.
+    // Por isso, use primeiro os inícios reais das células preenchidas no corpo
+    // da tabela; os títulos servem apenas como alternativa quando faltarem dados.
+    const frequencias = new Map();
+    for (const l of dados) {
+      for (const seg of segmentos(l, 5)) {
+        const x = Math.round(seg.x / 4) * 4;
+        frequencias.set(x, (frequencias.get(x) || 0) + 1);
       }
-      const colunas = grupos.map((g) => ({ x: mediana(g.xs), n: g.xs.length }))
-        .sort((p, q) => q.n - p.n).slice(0, 5).sort((p, q) => p.x - q.x);
-      xsColunas = colunas.map((c) => c.x);
+    }
+    const colunasCorpo = [...frequencias.entries()]
+      .map(([x, n]) => ({ x, n }))
+      .sort((p, q) => q.n - p.n)
+      .slice(0, 5)
+      .sort((p, q) => p.x - q.x)
+      .map((c) => c.x);
+    let xsColunas = colunasCorpo.length === 5
+      ? colunasCorpo
+      : ancorasCabecalho(linhas.slice(a + 1, b));
+    if (xsColunas.length < 5) {
+      const anchors = ancorasCabecalho(linhas.slice(a + 1, b));
+      if (anchors.length === 5) xsColunas = anchors;
     }
     if (xsColunas.length < 5) return { dinamica: [], bruto, colunasEncontradas: xsColunas.length };
 
