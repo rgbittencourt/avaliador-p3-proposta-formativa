@@ -81,7 +81,7 @@
       const fs = document.createElement('fieldset'); fs.className = 'criterio';
       fs.innerHTML = `<legend>Critério ${idx + 1}: ${esc(c.label)} (0 a ${c.max})</legend>` +
         c.niveis.map((n) => `<label class="nivel"><input type="radio" name="r_${k}" value="${n.pontos}"><span class="pts">${n.pontos} ${n.pontos === 1 ? 'ponto' : 'pontos'}</span><span class="txt">${esc(n.desc)}</span></label>`).join('') +
-        `<div class="just" id="just_${k}"></div>` +
+        `<div class="just" id="just_${k}" role="status" aria-live="polite"></div>` +
         `<textarea class="nota-obs" id="obs_${k}" placeholder="Observação para o feedback deste critério (opcional, usada apenas se a nota não for máxima)"></textarea>`;
       box.appendChild(fs);
       fs.querySelectorAll('input[type=radio]').forEach((r) => r.addEventListener('change', () => { estado.pontuacoes[k] = Number(r.value); recalcular(true); }));
@@ -92,7 +92,7 @@
     C.ORDEM.forEach((k) => {
       document.querySelectorAll(`input[name=r_${k}]`).forEach((r) => { r.checked = estado.pontuacoes[k] != null && Number(r.value) === Number(estado.pontuacoes[k]); });
       $('obs_' + k).value = estado.observacoes[k] || '';
-      $('just_' + k).textContent = estado.justificativas[k] ? 'Sugestão: ' + estado.justificativas[k] : '';
+      $('just_' + k).textContent = estado.justificativas[k] ? 'Análise do critério: ' + estado.justificativas[k] : 'A análise individual será exibida aqui após a avaliação automática.';
     });
   }
 
@@ -120,7 +120,7 @@
   }
   function gerarFeedback(silencioso) {
     if (Object.keys(estado.pontuacoes).length < C.ORDEM.length) { $('feedbackStatus').textContent = 'Preencha todos os critérios da rubrica para gerar o feedback.'; return; }
-    $('feedbackOut').value = C.feedbackLocal(dados(), pontosObj(), estado.observacoes);
+    $('feedbackOut').value = C.feedbackLocal(dados(), pontosObj(), estado.observacoes, estado.justificativas);
     estado.feedbackEditado = false;
     if (!silencioso) $('feedbackStatus').textContent = 'Feedback atualizado conforme a avaliação.';
   }
@@ -147,7 +147,12 @@
     $('btnAutoAvaliar').disabled = true;
     try {
       const r = await api('/api/avaliar', { method: 'POST', body: JSON.stringify(dados()) });
-      C.ORDEM.forEach((k) => { estado.pontuacoes[k] = r.pontuacoes[k].pontos; estado.justificativas[k] = r.pontuacoes[k].justificativa; });
+      C.ORDEM.forEach((k) => {
+        const item = r.pontuacoes?.[k] || {};
+        estado.pontuacoes[k] = C.RUBRICA[k].niveis.some((n) => n.pontos === Number(item.pontos)) ? Number(item.pontos) : C.RUBRICA[k].niveis[0].pontos;
+        const nivel = C.RUBRICA[k].niveis.find((n) => n.pontos === estado.pontuacoes[k]);
+        estado.justificativas[k] = String(item.justificativa || nivel?.desc || '');
+      });
       estado.modo = r.modo || 'local';
       marcarRubrica();
       if (r.alertas && r.alertas.length) $('alertasManuais').value = r.alertas.join('\n');
