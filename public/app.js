@@ -163,8 +163,10 @@
   });
 
   /* ---------- PDF ---------- */
+  let pdfPreviewData = null;
   async function lerPdf(arquivo) {
     const buf = new Uint8Array(await arquivo.arrayBuffer());
+    const previewData = buf.slice();
     const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
     const paginas = []; const textos = []; const miniaturas = [];
     for (let i = 1; i <= pdf.numPages; i++) {
@@ -179,18 +181,42 @@
         miniaturas.push(cv.toDataURL('image/png'));
       }
     }
-    return { paginas, textos, miniaturas, n: pdf.numPages };
+    return { paginas, textos, miniaturas, n: pdf.numPages, previewData };
   }
+
+  async function abrirPaginaPdf(numero) {
+    if (!pdfPreviewData) return;
+    const modal = $('pdfModal'); const canvas = $('pdfPaginaGrande'); const status = $('pdfModalStatus');
+    modal.hidden = false; document.body.style.overflow = 'hidden'; status.textContent = `Carregando página ${numero}...`;
+    try {
+      const pdf = await pdfjsLib.getDocument({ data: pdfPreviewData.slice() }).promise;
+      const pg = await pdf.getPage(numero);
+      const original = pg.getViewport({ scale: 1 });
+      const scale = Math.min(2.2, (window.innerWidth - 48) / original.width, (window.innerHeight - 120) / original.height);
+      const viewport = pg.getViewport({ scale: Math.max(0.35, scale) });
+      canvas.width = Math.ceil(viewport.width); canvas.height = Math.ceil(viewport.height);
+      await pg.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
+      status.textContent = `Página ${numero}`;
+    } catch (e) { status.textContent = 'Não foi possível ampliar esta página: ' + e.message; }
+  }
+  function fecharPaginaPdf() { $('pdfModal').hidden = true; document.body.style.overflow = ''; }
+  $('paginasPdf').addEventListener('click', (e) => {
+    const thumb = e.target.closest('[data-pdf-page]'); if (thumb) abrirPaginaPdf(Number(thumb.dataset.pdfPage));
+  });
+  $('pdfModalClose').addEventListener('click', fecharPaginaPdf);
+  $('pdfModal').addEventListener('click', (e) => { if (e.target === $('pdfModal')) fecharPaginaPdf(); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !$('pdfModal').hidden) fecharPaginaPdf(); });
+
   $('arquivoPdf').addEventListener('change', async (e) => {
     const f = e.target.files[0]; if (!f) return;
     const st = $('importStatus'); st.textContent = 'Lendo o PDF...';
     try {
-      const { paginas, textos, miniaturas, n } = await lerPdf(f);
+      const { paginas, textos, miniaturas, n, previewData } = await lerPdf(f);
       const r = X.extrair(paginas);
       novaAvaliacao(true);
       preencher(r);
-      estado.textoPaginas = textos; estado.extracaoBruta = r;
-      $('paginasPdf').innerHTML = miniaturas.map((m, i) => `<img src="${m}" alt="Página ${i + 1}">`).join('');
+      estado.textoPaginas = textos; estado.extracaoBruta = r; pdfPreviewData = previewData;
+      $('paginasPdf').innerHTML = miniaturas.map((m, i) => `<button type="button" class="pagina-thumb" data-pdf-page="${i + 1}" aria-label="Ampliar página ${i + 1}" title="Clique para ampliar"><img src="${m}" alt="Página ${i + 1}"></button>`).join('');
       st.textContent = `PDF lido (${n} página(s)): ${r.dinamica.length} linha(s) na dinâmica. Revise os campos antes de avaliar.`;
       recalcular(true); verificarDuplicidade();
     } catch (err) { st.textContent = 'Não foi possível ler o PDF: ' + err.message; }
@@ -265,7 +291,7 @@
     preencher({}); $('feedbackOut').value = ''; $('alertasManuais').value = ''; $('statusCorrecao').value = 'nenhuma';
     $('autoStatus').textContent = ''; $('feedbackStatus').textContent = ''; $('paginasPdf').innerHTML = '';
     marcarRubrica(); desenharNota();
-    if (!silencioso) { $('arquivoPdf').value = ''; $('importStatus').textContent = ''; estado.textoPaginas = []; }
+    if (!silencioso) { $('arquivoPdf').value = ''; $('importStatus').textContent = ''; estado.textoPaginas = []; pdfPreviewData = null; }
   }
   $('btnNova').addEventListener('click', () => novaAvaliacao(false));
 
