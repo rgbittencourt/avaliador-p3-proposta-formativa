@@ -59,6 +59,7 @@
   .brand img{width:54px;height:54px;object-fit:contain;flex:0 0 auto;}
   header h1{margin:0;font-size:1.4rem;}
   header p{margin:4px 0 0;font-size:0.9rem;opacity:0.9;}
+  .app-version{display:inline-block;margin-top:8px;padding:3px 8px;border:1px solid rgba(255,255,255,.45);border-radius:999px;font-size:.72rem;opacity:.95;}
   @media (max-width:600px){
     header{padding:14px 16px;}
     .brand{align-items:flex-start;gap:10px;}
@@ -179,6 +180,7 @@
     <div>
       <h1>Avaliador · P3 Proposta Formativa (TEDPRO)</h1>
       <p>Especialização em Tecnologias para Educação Profissional e Tecnológica · IFSC Campus Florianópolis-Continente</p>
+      <span class="app-version" id="appVersion" aria-live="polite">Versão carregando…</span>
     </div>
   </div>
 </header>
@@ -343,6 +345,20 @@
 <script src="p3-core.js"></script>
 <script src="extrator.js"></script>
 <script src="app.js"></script>
+<script>
+  (async () => {
+    const el = document.getElementById('appVersion');
+    try {
+      const response = await fetch('/api/version', { cache: 'no-store' });
+      if (!response.ok) throw new Error('Versão indisponível');
+      const info = await response.json();
+      el.textContent = 'Versão ' + info.version + ' · build ' + info.commitCurto;
+      el.title = 'Commit implantado: ' + info.commit;
+    } catch {
+      el.textContent = 'Versão não confirmada';
+    }
+  })();
+</script>
 <script>
   if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('/service-worker.js'));
 </script>
