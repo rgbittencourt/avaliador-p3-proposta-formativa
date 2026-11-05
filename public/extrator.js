@@ -217,32 +217,10 @@
     const dados = regiao.filter((l) => !LINHA_INSTRUCAO.test(l.texto));
     if (!dados.length) return { dinamica: [], bruto };
 
-    // Estime as cinco colunas pelos inícios de célula mais recorrentes no corpo.
-    // As linhas de instrução podem estar quebradas em várias linhas, mas usam as
-    // mesmas posições horizontais; elas não devem criar registros da tabela.
-    const inicios = [];
-    for (const l of dados) {
-      for (const seg of segmentos(l, 12)) inicios.push(seg.x);
-    }
-    inicios.sort((p, q) => p - q);
-    const gruposX = [];
-    for (const px of inicios) {
-      const g = gruposX[gruposX.length - 1];
-      if (g && px - g.centro <= 10) {
-        g.xs.push(px);
-        g.centro = mediana(g.xs);
-      } else gruposX.push({ xs: [px], centro: px });
-    }
-    const colunasCorpo = gruposX
-      .map((g) => ({ x: mediana(g.xs), n: g.xs.length }))
-      .sort((p, q) => q.n - p.n)
-      .slice(0, 5)
-      .sort((p, q) => p.x - q.x)
-      .map((g) => g.x);
-    let xsColunas = colunasCorpo.length === 5
-      ? colunasCorpo
-      : ancorasCabecalho(linhas.slice(a + 1, b));
-    if (xsColunas.length < 5) {
+    // As posições fixas vêm dos cinco cabeçalhos do próprio modelo. O texto
+    // das respostas quebra em pontos diferentes e não é uma referência segura.
+    const xsColunas = ancorasCabecalho(regiao);
+    if (xsColunas.length !== 5) {
       return { dinamica: [], bruto, colunasEncontradas: xsColunas.length, linhasIdentificadas: 0 };
     }
 
