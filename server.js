@@ -65,15 +65,26 @@ RIGOR E CONSISTÊNCIA
 - Compare evidências específicas entre desafio, público-alvo, objetivos, conteúdos, metodologias, dinâmica, tecnologias e avaliação. Verifique se a sequência de atividades pode de fato levar aos resultados pretendidos.
 - Para a dinâmica, examine concretude das atividades, adequação dos espaços, participação dos estudantes, papel do professor, duração e coerência com a carga horária. A soma de durações é um indício, não substitui a análise pedagógica.
 - Para tecnologias, identifique a função de cada recurso na aprendizagem; citar nomes de ferramentas sem explicar seu uso não basta para a pontuação máxima.
-- Para avaliação, verifique o que será observado ou produzido, como isso se relaciona aos objetivos e se há critérios ou formas de acompanhamento suficientes.
-- Conceda a pontuação máxima somente quando as evidências sustentarem todos os elementos do descritor máximo. Quando a evidência for parcial, contraditória, genérica ou ausente, escolha o nível inferior mais adequado. Não invente lacunas nem penalize aspectos que a rubrica não avalia.
+- Para avaliação, verifique se a estratégia e as produções previstas se relacionam aos objetivos e às atividades. Não exija rubrica própria, pesos, instrumentos detalhados ou indicadores formais quando o descritor não os exigir.
+- Adote rigor equilibrado e proporcional ao descritor. Uma proposta consistente pode obter o máximo mesmo sendo sintética e tendo oportunidades de aprofundamento. Pontuação máxima significa atendimento ao descritor, não perfeição ou planejamento exaustivo.
+- Leia o documento como um conjunto: uma informação na dinâmica pode esclarecer o planejamento e vice-versa. Não penalize por não repetir informações em todos os campos.
+- Antes de reduzir um critério, identifique a evidência concreta e explique qual elemento do descritor ficou comprometido. Distinga uma lacuna relevante de uma sugestão opcional de enriquecimento. Sugestões opcionais não justificam desconto.
+- Reserve níveis baixos para ausências, incoerências ou limitações efetivas. Um ajuste pontual em uma dinâmica globalmente coerente corresponde ao nível imediatamente inferior quando realmente compromete a clareza; não transforme esse ajuste em avaliação de proposta superficial.
+- Não desconte a mesma lacuna em vários critérios, salvo impactos distintos demonstráveis. Não exija inovação excepcional, detalhamento de cada intervenção docente ou mediação síncrona em toda atividade de leitura.
+- Não invente ausências: duração declarada é duração definida; só questione o caráter prévio/assíncrono se a ambiguidade realmente comprometer a sequência. Uma declaração breve de IA com ferramenta e finalidade pode atender integralmente ao critério.
+- Não busque uma nota-alvo, não aplique bônus e não force uma distribuição de notas. Escolha os níveis sustentados pelas evidências e pela rubrica.
 - O critério ia é binário (0 ou 1): vale 1 quando o estudante declara claramente o uso ou não uso de IA e, havendo uso, informa as ferramentas e sua contribuição. Uma declaração breve, mas clara, satisfaz o critério; não exija detalhes adicionais para conceder o ponto.
 
 TOM DOS FEEDBACKS
 - Escreva em português brasileiro natural, acolhedor e direto, como um professor falando com a estudante. Personalize a justificativa com evidências que realmente aparecem na proposta.
 - Evite linguagem burocrática, frases genéricas, excesso de termos da rubrica e cópia literal dos descritores. Prefira explicar com clareza o que funciona e, quando a nota não for máxima, qual ajuste concreto fortaleceria a proposta.
 - Seja respeitoso e encorajador sem esconder problemas nem exagerar elogios. Não repita a mesma fórmula de justificativa em todos os critérios.
-- Para cada critério, escreva uma justificativa curta, específica e útil. Não acrescente recomendações fora do escopo daquele critério.
+- Para cada critério, escreva um parágrafo com começo, desenvolvimento e fechamento, em geral de 60 a 120 palavras quando houver desconto e de 35 a 70 palavras quando houver atendimento pleno. Use a extensão necessária para explicar, sem preencher espaço.
+- Fale diretamente com a pessoa usando "você" e "sua proposta". Cite escolhas concretas e explique seu valor pedagógico. Quando houver desconto, reconheça o que funciona, situe a limitação e ofereça um ajuste viável, como em uma conversa de orientação.
+- Evite elogios prontos como "é nítido o esforço", "base importante", "jornada de aprendizagem" e "parabéns pela dedicação" sem ligação com o trabalho. Evite listas burocráticas de faltas e palavras como "robustez" e "operacionalização" quando houver expressão mais simples.
+- Produza também mensagemInicial: um parágrafo personalizado de 60 a 100 palavras, reconhecendo qualidades reais da proposta sem exagero e sem repetir a pergunta-desafio, a saudação ou a nota.
+- Produza mensagemFinal: um parágrafo personalizado de 45 a 80 palavras que retome uma força concreta e situe a dimensão dos ajustes. Se houver apenas uma limitação pequena, diga isso com proporcionalidade. Não repita toda a análise nem inclua despedida.
+- Esses parágrafos não devem introduzir novas críticas a critérios que receberam nota máxima. Não acrescente recomendações fora do escopo da rubrica.
 - A justificativa da rubrica deve explicar a pontuação de todos os critérios. Se a pontuação for máxima, registre evidências concretas de atendimento ao descritor e não acrescente ressalvas, recomendações ou sugestões de melhoria. Se ficar abaixo do máximo, reconheça o que já funciona e indique com delicadeza um ajuste concreto.
 - O feedback final é montado pelo aplicativo: nele devem aparecer somente os critérios abaixo da pontuação máxima e a nota final. Nunca inclua lista de notas por critério nesse texto; critérios com nota máxima ficam fora do feedback final.
 - Nunca invente evidências. Se os dados não permitirem concluir algo, diga isso com clareza e pontue conforme o que está documentado.
@@ -102,7 +113,7 @@ Declaração de IA: ${txt(d.iaDeclaracao)}
 Descrição do uso de IA: ${txt(d.iaDescricao)}
 
 Responda APENAS em JSON válido:
-{"pontuacoes":{"coerencia":{"pontos":0,"justificativa":""},"dinamica":{"pontos":0,"justificativa":""},"tecnologias":{"pontos":0,"justificativa":""},"avaliacao":{"pontos":0,"justificativa":""},"ia":{"pontos":0,"justificativa":""}},"alertas":[""]}`;
+{"pontuacoes":{"coerencia":{"pontos":0,"justificativa":""},"dinamica":{"pontos":0,"justificativa":""},"tecnologias":{"pontos":0,"justificativa":""},"avaliacao":{"pontos":0,"justificativa":""},"ia":{"pontos":0,"justificativa":""}},"mensagemInicial":"","mensagemFinal":"","alertas":[""]}`;
 }
 
 function limparAvaliacao(resultado = {}) {
@@ -111,7 +122,7 @@ function limparAvaliacao(resultado = {}) {
     const item = resultado.pontuacoes?.[k] || {};
     pontuacoes[k] = { pontos: Core.pontoValido(k, item.pontos), justificativa: Core.semTravessao(String(item.justificativa || '').trim()) };
   }
-  return { pontuacoes, alertas: (Array.isArray(resultado.alertas) ? resultado.alertas : []).map(String).filter(Boolean).map(Core.semTravessao) };
+  return { pontuacoes, mensagemInicial: Core.semTravessao(String(resultado.mensagemInicial || '').trim()), mensagemFinal: Core.semTravessao(String(resultado.mensagemFinal || '').trim()), alertas: (Array.isArray(resultado.alertas) ? resultado.alertas : []).map(String).filter(Boolean).map(Core.semTravessao) };
 }
 
 async function chamarOpenAI(prompt, temperatura = 0.2) {
