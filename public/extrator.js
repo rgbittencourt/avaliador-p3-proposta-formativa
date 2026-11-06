@@ -3,9 +3,9 @@
    Entrada: páginas = [{ itens: [{ s, x, y, w }] }]  (y cresce para cima, como no pdf.js)
    Funciona no navegador e no Node (testes). */
 (function (raiz, fabrica) {
-  if (typeof module === 'object' && module.exports) module.exports = fabrica();
-  else raiz.P3Extrator = fabrica();
-})(typeof self !== 'undefined' ? self : this, function () {
+  if (typeof module === 'object' && module.exports) module.exports = fabrica(require('./p3-core.js'));
+  else raiz.P3Extrator = fabrica(raiz.P3Core);
+})(typeof self !== 'undefined' ? self : this, function (Core) {
 
   const RODAPE = /(Instituto Federal de Santa Catarina|Rua:\s*14 de julho|Fone:\s*\(48\)|www\.ifsc\.edu\.br)/i;
   const ROTULOS = [
@@ -202,7 +202,6 @@
     return achadas.every((x) => x != null) ? achadas : [];
   }
 
-  const RE_DURACAO = /^\s*(?:\d+(?:[.,]\d+)?\s*(?:horas?(?:\s*[-–—]?\s*aula)?|h(?:\s*[-–—]?\s*aula)?|minutos?|min)(?:\s*\d+\s*(?:minutos?|min)?)?|\d+\s*h\s*\d{1,2})\s*$/i;
 
   function extrairParte2(linhas) {
     const a = indiceLinha(linhas, /PARTE\s*2/i);
@@ -244,7 +243,7 @@
     });
     const ehInicioRegistro = (l) =>
       l.cel[0].length && l.cel[1].length
-      && RE_DURACAO.test(juntarParagrafos(l.cel[2]))
+      && Core.duracaoValida(juntarParagrafos(l.cel[2]))
       && !LINHA_INSTRUCAO.test(l.texto);
     const iniciosRegistros = linhasCelulas.filter(ehInicioRegistro);
 
