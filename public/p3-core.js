@@ -82,7 +82,17 @@
 
   /* ---------- duração ---------- */
   // Converte textos como "2 horas", "1h30", "40 minutos", "20 min" em minutos. Retorna null se não houver número de tempo.
+  // Mesma interpretação para importação e soma; preserva o texto original no formulário.
+  function minutosDaDuracaoIsolada(texto) {
+    const s = semAcento(texto).replace(/\s+/g, '').replace(/,/g, '.').replace(/[‐‑‒–—]/g, '-');
+    const m = s.match(/^(?:(\d+(?:\.\d+)?)(?:horas?(?:-?aula)?|hrs?\.?|h(?:\/a|-?aula)?)(?:e?(\d+(?:\.\d+)?)(?:minutos?|mins?\.?|m)?)?|(\d+(?:\.\d+)?)(?:minutos?|mins?\.?|m))$/);
+    return m ? Math.round(Number(m[1] || 0) * 60 + Number(m[2] || m[3] || 0)) : null;
+  }
+  function duracaoValida(texto) { return minutosDaDuracaoIsolada(texto) !== null; }
+
   function paraMinutos(texto) {
+    const isolada = minutosDaDuracaoIsolada(texto);
+    if (isolada !== null) return isolada;
     const s = semAcento(texto).replace(/,/g, '.');
     if (!s) return null;
     let total = 0, achou = false;
@@ -291,7 +301,7 @@
 
   return {
     ORIENTADOR_CORRETO, RUBRICA, ORDEM, NOTA_MAXIMA,
-    pontoValido, semTravessao, primeiroNome, formatarNota, paraMinutos, formatarMinutos,
+    pontoValido, semTravessao, primeiroNome, formatarNota, paraMinutos, formatarMinutos, duracaoValida,
     orientadorCorreto, orientadorVazio, matriculaValida, matriculaPlaceholder, nomePlaceholder,
     desafioTemTextoDoModelo, limparDesafio, desafioComecaCorreto, analisarDeclaracaoIA,
     alertasAutomaticos, sugestaoLocal, total, ordemNaoMaxima, feedbackLocal
