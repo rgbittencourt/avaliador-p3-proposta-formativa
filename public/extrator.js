@@ -202,7 +202,7 @@
     return achadas.every((x) => x != null) ? achadas : [];
   }
 
-  const RE_DURACAO = /^\s*\d+(?:[.,]\d+)?\s*(?:horas?|h|minutos?|min)\s*$/i;
+  const RE_DURACAO = /^\s*(?:\d+(?:[.,]\d+)?\s*(?:horas?(?:\s*[-–—]?\s*aula)?|h(?:\s*[-–—]?\s*aula)?|minutos?|min)(?:\s*\d+\s*(?:minutos?|min)?)?|\d+\s*h\s*\d{1,2})\s*$/i;
 
   function extrairParte2(linhas) {
     const a = indiceLinha(linhas, /PARTE\s*2/i);
@@ -248,7 +248,7 @@
       && !LINHA_INSTRUCAO.test(l.texto);
     const iniciosRegistros = linhasCelulas.filter(ehInicioRegistro);
 
-    if (iniciosRegistros.length >= 2) {
+    if (iniciosRegistros.length >= 1) {
       const registros = [];
       let registroAtual = null;
       let paginaAtual = null;
@@ -265,12 +265,10 @@
 
         if (registroAtual) {
           linha.cel.forEach((c, j) => registroAtual.cel[j].push(...c));
-        } else if (registros.length
-          && linha.cel[4].length
-          && !linha.cel[0].length && !linha.cel[1].length
-          && !linha.cel[2].length && !linha.cel[3].length) {
-          // Continuação no topo da página seguinte: somente Papel do professor.
-          linha.cel[4].forEach((item) => registros[registros.length - 1].cel[4].push(item));
+        } else if (registros.length && !LINHA_INSTRUCAO.test(linha.texto)) {
+          // Antes do primeiro registro da nova página, preserve a continuação
+          // na mesma coluna, inclusive atividade e papel do aluno.
+          linha.cel.forEach((c, j) => registros[registros.length - 1].cel[j].push(...c));
         }
       }
 
