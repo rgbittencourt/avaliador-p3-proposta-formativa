@@ -47,6 +47,8 @@ ${criterios}
 DADOS DO TRABALHO
 ${campos}
 
+No objeto "coerencia", seja breve: cada campo de texto com no máximo 2 frases e cada lista com no máximo 3 itens curtos. Desenvolva o texto completo só em "analise_coerencia" e "feedback_coerencia".
+
 Responda APENAS com JSON válido neste formato:
 {"coerencia":{"relacao_desafio_publico":"string","adequacao_ao_publico":"string","relacao_desafio_produto":"string","utilidade_para_o_desafio":"string","consistencia_global":"string","pontos_fortes":["string"],"tensoes":["string"],"desalinhamentos":["string"],"informacoes_insuficientes":["string"]},"analise_coerencia":"string","feedback_coerencia":"string"}`;
 }

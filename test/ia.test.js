@@ -55,6 +55,13 @@ test('chamarIA trata recusa, resposta cortada e erro HTTP da Anthropic', async (
   const env = {IA_PROVEDOR:'anthropic', ANTHROPIC_API_KEY:'k'};
   await assert.rejects(chamarIA('x', 0, {env, fetch: async () => respostaFalsa(200, {stop_reason:'refusal', content:[]})}), /recusou responder/);
   await assert.rejects(chamarIA('x', 0, {env, fetch: async () => respostaFalsa(200, {stop_reason:'max_tokens', content:[{type:'text', text:'{"a":'}]})}), /cortada/);
+  // cortada na 1ª tentativa e completa na 2ª, com o dobro do limite
+  const limites = [];
+  const r = await chamarIA('x', 0, {env, fetch: async (_u, op) => { const c = JSON.parse(op.body); limites.push(c.max_tokens);
+    return limites.length === 1 ? respostaFalsa(200, {stop_reason:'max_tokens', content:[{type:'text', text:'{"a":'}]})
+                                : respostaFalsa(200, {stop_reason:'end_turn', content:[{type:'text', text:'{"a":1}'}]}); }});
+  assert.deepEqual(r, {a:1});
+  assert.deepEqual(limites, [16000, 32000]);
   await assert.rejects(chamarIA('x', 0, {env, fetch: async () => respostaFalsa(529, 'overloaded')}), /Anthropic recusou a análise \(529\)/);
 });
 

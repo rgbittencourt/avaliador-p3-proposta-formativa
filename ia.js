@@ -7,7 +7,8 @@
 //                      ANTHROPIC_API_KEY.
 //   OPENAI_API_KEY     chave da OpenAI          OPENAI_MODEL     (padrão gpt-4o-mini)
 //   ANTHROPIC_API_KEY  chave da Anthropic       ANTHROPIC_MODEL  (padrão claude-haiku-5-5)
-//   IA_MAX_TOKENS      limite de tokens da resposta (padrão 8192)
+//   IA_MAX_TOKENS      limite de tokens da resposta (padrão 16000; se a resposta
+//                      for cortada, tenta de novo uma vez com o dobro, até 32000)
 //
 // A tela também pode escolher o provedor a cada chamada pelo cabeçalho
 // X-IA-Provedor (seletor "IA" no topo do app). O servidor só aceita um
@@ -41,7 +42,7 @@ function configIA(env = process.env, preferido = '') {
     variavelChave: p.variavelChave,
     chave,
     modelo: env[p.variavelModelo] || p.modeloPadrao,
-    maxTokens: Number(env.IA_MAX_TOKENS) || 8192,
+    maxTokens: Number(env.IA_MAX_TOKENS) || 16000,
     configurada: Boolean(chave)
   };
 }
@@ -80,10 +81,12 @@ async function chamarOpenAI(cfg, prompt, temperatura, f) {
 }
 
 async function chamarAnthropic(cfg, prompt, temperatura, f) {
-  const enviar = (comTemperatura) => {
+  let maxTokens = cfg.maxTokens;
+  let comTemperatura = true;
+  const enviar = () => {
     const corpo = {
       model: cfg.modelo,
-      max_tokens: cfg.maxTokens,
+      max_tokens: maxTokens,
       system: INSTRUCAO_JSON,
       messages: [{ role: 'user', content: prompt }]
     };
@@ -94,19 +97,25 @@ async function chamarAnthropic(cfg, prompt, temperatura, f) {
       body: JSON.stringify(corpo)
     });
   };
-  let r = await enviar(true);
-  let detalhe = '';
-  if (r.status === 400) {
-    // Alguns modelos não aceitam "temperature": tenta de novo sem ele.
-    detalhe = await r.text().catch(() => '');
-    if (/temperature/i.test(detalhe)) { r = await enviar(false); detalhe = ''; }
+  for (let tentativa = 0; ; tentativa++) {
+    let r = await enviar();
+    let detalhe = '';
+    if (r.status === 400) {
+      // Alguns modelos não aceitam "temperature": tenta de novo sem ele.
+      detalhe = await r.text().catch(() => '');
+      if (comTemperatura && /temperature/i.test(detalhe)) { comTemperatura = false; r = await enviar(); detalhe = ''; }
+    }
+    if (!r.ok) throw erroHTTP(cfg, r.status, detalhe || await r.text().catch(() => ''));
+    const data = await r.json();
+    if (data.stop_reason === 'refusal') throw new Error('A IA da Anthropic recusou responder a este conteúdo.');
+    if (data.stop_reason === 'max_tokens') {
+      // Resposta cortada: tenta uma vez com o dobro do limite.
+      if (tentativa === 0 && maxTokens < 32000) { maxTokens = Math.min(maxTokens * 2, 32000); continue; }
+      throw new Error('A resposta da IA ficou longa demais e foi cortada. Tente novamente.');
+    }
+    const texto = (data.content || []).filter(b => b.type === 'text').map(b => b.text).join('');
+    return extrairJSON(texto);
   }
-  if (!r.ok) throw erroHTTP(cfg, r.status, detalhe || await r.text().catch(() => ''));
-  const data = await r.json();
-  if (data.stop_reason === 'refusal') throw new Error('A IA da Anthropic recusou responder a este conteúdo.');
-  if (data.stop_reason === 'max_tokens') throw new Error('A resposta da IA foi cortada por excesso de tamanho. Aumente IA_MAX_TOKENS ou tente novamente.');
-  const texto = (data.content || []).filter(b => b.type === 'text').map(b => b.text).join('');
-  return extrairJSON(texto);
 }
 
 // Envia o prompt ao provedor configurado e devolve o objeto JSON da resposta.
