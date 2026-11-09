@@ -4,7 +4,7 @@ App web (PWA) para avaliar a atividade P3, "Seu desafio como proposta formativa"
 
 ## Recursos
 - Importa o PDF do modelo P3 (lido no navegador com pdf.js, por posição do texto) e preenche os campos, incluindo a tabela da Parte 2.
-- Correção semântica opcional da extração e sugestão de notas com OpenAI; sem chave, usa análise local de completude.
+- Correção semântica opcional da extração e sugestão de notas com IA, pela OpenAI ou pela Anthropic (Claude), escolhida em `IA_PROVEDOR`; sem chave, usa análise local de completude. A chamada fica toda em `ia.js`.
 - Alertas automáticos: nome, matrícula, orientador incorreto/vazio, texto do modelo no desafio, campos vazios, soma das durações x carga horária, declaração de IA.
 - Feedback no padrão do Prof. Rogério (Olá..., Tema/Assunto, só critérios abaixo do máximo, Um abraço), sem travessões.
 - Turmas, duplicidade, status das correções solicitadas, exportação JSON/CSV, backup no GitHub e relatório executivo imprimível com 4 gráficos.

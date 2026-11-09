@@ -32,7 +32,8 @@ Confira antes: `git status` não deve listar `.env`, `node_modules` nem `data/*.
 2. Preencha as variáveis:
    - `APP_PASSWORD`: senha de acesso ao app (usuário padrão: `professor`)
    - `DATABASE_URL`: do Neon
-   - `OPENAI_API_KEY`: opcional (sem ela o app usa a análise local de completude)
+   - `IA_PROVEDOR`: `openai` ou `anthropic` (qual IA usar; dá para trocar depois sem mexer no código)
+   - `OPENAI_API_KEY` e/ou `ANTHROPIC_API_KEY`: opcionais, conforme o provedor escolhido (sem chave o app usa a análise local de completude)
    - `GITHUB_DATA_TOKEN`: do passo C
    (`GITHUB_DATA_OWNER`, `GITHUB_DATA_REPO` e `GITHUB_DATA_BRANCH` já vêm no render.yaml.)
 3. Aguarde o deploy e abra `https://avaliador-p3.onrender.com` (ou a URL que o Render mostrar). Teste `/api/health`.

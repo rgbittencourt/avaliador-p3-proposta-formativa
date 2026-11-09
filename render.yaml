@@ -13,10 +13,16 @@ services:
         sync: false
       - key: DATABASE_URL
         sync: false
+      - key: IA_PROVEDOR
+        value: openai
       - key: OPENAI_API_KEY
         sync: false
       - key: OPENAI_MODEL
         value: gpt-4o-mini
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: ANTHROPIC_MODEL
+        value: claude-haiku-5-5
       - key: GITHUB_DATA_TOKEN
         sync: false
       - key: GITHUB_DATA_OWNER

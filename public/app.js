@@ -102,6 +102,9 @@
   }
   function alertasAtuais() { return C.alertasAutomaticos(dados()); }
 
+  const NOME_IA = { openai: 'OpenAI', anthropic: 'Claude' };
+  const modoIA = (m) => Object.prototype.hasOwnProperty.call(NOME_IA, m);
+
   function desenharNota() {
     const po = pontosObj();
     $('totalNota').textContent = nota(C.total(po));
@@ -110,7 +113,7 @@
       const cls = p == null ? 'b-zero' : p >= max ? 'b-max' : p > 0 ? 'b-mid' : 'b-zero';
       return `<tr><td>${esc(C.RUBRICA[k].curto)}</td><td style="text-align:right;"><span class="badge ${cls}">${p == null ? '-' : nota(p)} / ${max}</span></td></tr>`;
     }).join('');
-    $('modoTag').textContent = estado.modo === 'openai' ? 'Sugestão: IA' : estado.modo ? 'Sugestão: análise local' : '';
+    $('modoTag').textContent = modoIA(estado.modo) ? `Sugestão: IA (${NOME_IA[estado.modo]})` : estado.modo ? 'Sugestão: análise local' : '';
     const al = alertasAtuais();
     $('alertsBox').innerHTML = al.length ? al.map((a) => `<div class="alert ${a.nivel === 'erro' ? '' : 'info'}">${esc(a.texto)}</div>`).join('') : '<div class="no-alert">Nenhum alerta automático.</div>';
   }
@@ -159,7 +162,7 @@
       marcarRubrica();
       if (r.alertas && r.alertas.length) $('alertasManuais').value = r.alertas.join('\n');
       estado.feedbackEditado = false; recalcular(true);
-      st.textContent = r.modo === 'openai' ? 'Sugestão da IA aplicada. Revise as notas e as observações.' : 'Sugestão local aplicada (verifica o preenchimento). Revise as notas e as observações.';
+      st.textContent = modoIA(r.modo) ? `Sugestão da IA (${NOME_IA[r.modo]}) aplicada. Revise as notas e as observações.` : 'Sugestão local aplicada (verifica o preenchimento). Revise as notas e as observações.';
     } catch (e) { st.textContent = 'Falha: ' + e.message; }
     $('btnAutoAvaliar').disabled = false;
   });
