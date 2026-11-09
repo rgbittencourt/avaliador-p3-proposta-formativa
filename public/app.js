@@ -305,9 +305,9 @@
   // Bloco de coerência (complementar), logo abaixo do Feedback gerado.
   if (window.CoerenciaUI) CoerenciaUI.montar({ depoisDe: $('feedbackOut').closest('.card'), tagCard: 'div', coletar: () => dados(), api,
     titulo: 'Coerência da proposta formativa', produto: 'da proposta formativa',
-    oQue: 'Da <b>proposta formativa</b> planejada pelo estudante: objetivo, conteúdos, metodologias, dinâmica das atividades (Parte 2), recursos e avaliação.',
-    comOQue: 'Com o <b>desafio</b> que ele definiu e com o <b>público-alvo</b> indicado na proposta.',
-    aspectos: ['se objetivo, conteúdos e metodologias respondem ao desafio, e não só ao tema;', 'se a dinâmica (tempos, papéis e espaços) é viável e adequada ao público e à carga horária;', 'se a avaliação da aprendizagem mostraria se a proposta de fato ajudou no desafio.'] });
+    explicacao: 'Uma única análise semântica relaciona a <b>proposta formativa</b> (objetivo, conteúdos, metodologias, dinâmica da Parte 2, recursos e avaliação) com o <b>desafio</b> e o <b>público-alvo</b> do estudante: realizada como planejada, ela ajudaria de fato esse público a avançar no desafio, ou é uma formação correta, mas genérica? Ela não altera a rubrica, a nota nem o feedback da avaliação.',
+    dicaAnalise: 'Parecer técnico ao professor sobre a coerência da proposta com o desafio e o público-alvo. Totalmente editável.',
+    dicaFeedback: 'Mensagem pedagógica ao estudante sobre essa coerência. Totalmente editável.' });
 
   function abrirAvaliacao(id) {
     const a = estado.avaliacoes.find((x) => x.id === id); if (!a) return;

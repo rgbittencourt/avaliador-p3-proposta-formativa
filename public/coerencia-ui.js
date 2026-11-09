@@ -1,10 +1,11 @@
 /* Bloco "Coerência da proposta" (complementar, sem pontuação), no modelo do Avaliador P4.
    Uso no app:
      CoerenciaUI.montar({ depoisDe, tagCard: 'section'|'div', coletar, api,
-                          titulo, produto, oQue, comOQue, aspectos: [..] })
-       titulo:   ex. "Coerência do roteiro e do vídeo"
-       produto:  ex. "do roteiro e do vídeo" (usado nos subtítulos)
-       oQue / comOQue / aspectos: explicação "coerência de quê, com quê" mostrada no bloco
+                          titulo, produto, explicacao, dicaAnalise, dicaFeedback })
+       titulo:     ex. "Coerência do roteiro e do vídeo"
+       produto:    ex. "do roteiro e do vídeo" (usado nos subtítulos)
+       explicacao: linha logo abaixo do título: coerência de quê, com quê
+       dicaAnalise / dicaFeedback: linhas abaixo dos subtítulos
      CoerenciaUI.valores()   -> { analiseCoerencia, feedbackCoerencia }  (para salvar)
      CoerenciaUI.definir(av) -> carrega textos salvos
      CoerenciaUI.limpar()    -> nova avaliação */
@@ -24,11 +25,7 @@
       .coerencia-card textarea{width:100%;min-height:190px;font-size:.84rem;line-height:1.55;box-sizing:border-box;}
       .coerencia-bloco{margin-top:16px;padding-top:14px;border-top:1px dashed #c9d6df;}
       .coerencia-bloco h3{margin:0 0 4px;color:#1B4F72;font-size:.92rem;}
-      .coerencia-status{margin-top:6px;font-size:.82rem;}
-      .coerencia-explica{background:#F2F7FB;border:1px solid #D6EAF8;border-radius:10px;padding:10px 12px;margin:8px 0 6px;font-size:.84rem;line-height:1.5;display:flex;flex-direction:column;gap:5px;}
-      .coerencia-explica ul{margin:3px 0 0;padding-left:18px;}
-      .coerencia-explica li{margin:1px 0;}
-      .coerencia-pergunta{font-style:italic;color:#1B4F72;}`;
+      .coerencia-status{margin-top:6px;font-size:.82rem;}`;
     document.head.appendChild(s);
   }
 
@@ -41,27 +38,20 @@
     card.id = 'coerenciaCard';
     const titulo = cfg.titulo || 'Coerência da proposta';
     const produto = cfg.produto || 'da proposta';
-    const aspectos = (cfg.aspectos || []).map((a) => `<li>${a}</li>`).join('');
     card.innerHTML = `
       <h2>${titulo} <span class="coerencia-sub">(complementar, sem pontuação)</span></h2>
-      <div class="coerencia-explica">
-        <div><b>Coerência de quê?</b> ${cfg.oQue || 'Do que o estudante produziu.'}</div>
-        <div><b>Com o quê?</b> ${cfg.comOQue || 'Com o desafio definido pelo estudante e com o público-alvo indicado.'}</div>
-        ${aspectos ? `<div><b>O que a análise observa:</b><ul>${aspectos}</ul></div>` : ''}
-        <div class="coerencia-pergunta">Pergunta central: além de bem-feito, isso é realmente útil para enfrentar o desafio, para aquele público?</div>
-      </div>
-      <div class="hint">Não altera a rubrica, a nota nem o feedback da avaliação.</div>
+      <div class="hint">${cfg.explicacao || 'Uma única análise semântica relaciona o que foi produzido com o desafio e o público-alvo do estudante: além de bem-feito, é útil para enfrentar o desafio? Ela não altera a rubrica, a nota nem o feedback da avaliação.'}</div>
       <div class="toolbar"><button type="button" class="btn" id="btnAnalisarCoerencia">Analisar coerência</button></div>
       <div id="coerenciaStatus" class="hint coerencia-status"></div>
       <div class="coerencia-bloco">
         <h3>Análise de coerência ${produto}</h3>
-        <div class="hint">Parecer técnico destinado ao professor. Totalmente editável.</div>
+        <div class="hint">${cfg.dicaAnalise || 'Parecer técnico destinado ao professor. Totalmente editável.'}</div>
         <div class="toolbar"><button type="button" class="btn secondary" data-copiar="analiseCoerenciaOut">Copiar análise</button></div>
         <textarea id="analiseCoerenciaOut" placeholder="O parecer técnico aparecerá aqui."></textarea>
       </div>
       <div class="coerencia-bloco">
         <h3>Feedback sobre a coerência ${produto}</h3>
-        <div class="hint">Mensagem pedagógica dirigida ao estudante. Totalmente editável.</div>
+        <div class="hint">${cfg.dicaFeedback || 'Mensagem pedagógica dirigida ao estudante. Totalmente editável.'}</div>
         <div class="toolbar"><button type="button" class="btn secondary" data-copiar="feedbackCoerenciaOut">Copiar feedback de coerência</button></div>
         <textarea id="feedbackCoerenciaOut" placeholder="O feedback de coerência aparecerá aqui."></textarea>
       </div>`;
