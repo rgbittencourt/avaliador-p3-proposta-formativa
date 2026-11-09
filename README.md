@@ -2,6 +2,12 @@
 
 App web (PWA) para avaliar a atividade P3, "Seu desafio como proposta formativa", com a rubrica oficial (C1 0 a 2, C2 0 a 3, C3 0 a 2, C4 0 a 2, C5 0 ou 1; total 10).
 
+## Aplicativo publicado
+
+- **App (P3 Proposta Formativa):** https://avaliador-p3.onrender.com
+- **Verificação do servidor:** https://avaliador-p3.onrender.com/api/health
+- Hospedagem: Render (serviço `avaliador-p3`). O plano gratuito "dorme" sem uso: a primeira abertura pode levar uns 50 segundos.
+
 ## Recursos
 - Importa o PDF do modelo P3 (lido no navegador com pdf.js, por posição do texto) e preenche os campos, incluindo a tabela da Parte 2.
 - Correção semântica opcional da extração e sugestão de notas com IA, pela OpenAI ou pela Anthropic (Claude), escolhida em `IA_PROVEDOR`; sem chave, usa análise local de completude. A chamada fica toda em `ia.js`.
