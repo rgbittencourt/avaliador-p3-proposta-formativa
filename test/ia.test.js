@@ -69,3 +69,17 @@ test('chamarIA mantém o comportamento atual com a OpenAI', async () => {
   assert.deepEqual(pedido.corpo.response_format, {type:'json_object'});
   await assert.rejects(chamarIA('x', 0, {env:{}, fetch}), /OPENAI_API_KEY não configurada/);
 });
+
+test('o seletor da tela escolhe o provedor só quando há chave para ele', () => {
+  const {configDaRequisicao, provedoresDisponiveis} = require('../ia');
+  const req = (v) => ({get: (h) => (h.toLowerCase() === 'x-ia-provedor' ? v : undefined)});
+  const env = {IA_PROVEDOR:'openai', OPENAI_API_KEY:'a', ANTHROPIC_API_KEY:'b'};
+  assert.equal(configDaRequisicao(req('anthropic'), env).provedor, 'anthropic');
+  assert.equal(configDaRequisicao(req('openai'), env).provedor, 'openai');
+  assert.equal(configDaRequisicao(req(undefined), env).provedor, 'openai');
+  assert.equal(configDaRequisicao(req('qualquer'), env).provedor, 'openai');
+  assert.equal(configDaRequisicao(req('anthropic'), {IA_PROVEDOR:'openai', OPENAI_API_KEY:'a'}).provedor, 'openai');
+  assert.deepEqual(provedoresDisponiveis(env).map(p => p.id), ['openai','anthropic']);
+  assert.deepEqual(provedoresDisponiveis({ANTHROPIC_API_KEY:'b'}).map(p => p.id), ['anthropic']);
+  assert.deepEqual(provedoresDisponiveis({}), []);
+});

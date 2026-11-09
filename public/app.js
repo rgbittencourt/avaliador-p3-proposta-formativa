@@ -16,14 +16,15 @@
   let auth = '';
   try { auth = sessionStorage.getItem('p3auth') || ''; } catch (e) { /* sem storage */ }
   async function api(url, opcoes = {}, tentativa = 0) {
-    const h = { ...(opcoes.headers || {}) };
+    const h = { ...(opcoes.headers || {}), ...(window.SeletorIA ? SeletorIA.cabecalho() : {}) };
     if (opcoes.body && !h['Content-Type']) h['Content-Type'] = 'application/json';
     if (auth) h.Authorization = auth;
     const r = await fetch(url, { ...opcoes, headers: h });
     if (r.status === 401 && tentativa < 2 && !(await r.clone().json().catch(() => ({}))).erro) {
-      const u = prompt('Usuário:', 'professor'); const s = u === null ? null : prompt('Senha:');
-      if (s === null) throw new Error('Autenticação cancelada.');
-      auth = 'Basic ' + btoa(unescape(encodeURIComponent(`${u}:${s}`)));
+      if (tentativa > 0) SeletorIA.esquecerLogin();
+      const login = await SeletorIA.pedirLogin('professor');
+      if (!login) throw new Error('Autenticação cancelada.');
+      auth = SeletorIA.basic(login.usuario, login.senha);
       try { sessionStorage.setItem('p3auth', auth); } catch (e) { /* ok */ }
       return api(url, opcoes, tentativa + 1);
     }

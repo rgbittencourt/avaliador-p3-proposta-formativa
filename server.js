@@ -3,7 +3,7 @@ const express = require('express');
 const path = require('path');
 const Core = require('./public/p3-core.js');
 const db = require('./db');
-const { configIA, chamarIA, statusIA } = require('./ia');
+const { configIA, configDaRequisicao, chamarIA, statusIA } = require('./ia');
 
 const { RUBRICA, ORDEM } = Core;
 const app = express();
@@ -21,11 +21,13 @@ app.use((req, res, next) => {
   let usuario = '', senha = '';
   try { [usuario, senha] = Buffer.from(header.replace(/^Basic\s+/i, ''), 'base64').toString('utf8').split(':'); } catch { /* ignora */ }
   if (usuario === APP_USERNAME && senha === APP_PASSWORD) return next();
-  res.set('WWW-Authenticate', 'Basic realm="Avaliador P3 Proposta Formativa", charset="UTF-8"');
+  res.set('X-Login-Necessario', '1'); // sem WWW-Authenticate: a janela de login é a do app, não a do navegador
   return res.status(401).send('Autenticação necessária.');
 });
 
 app.use(express.json({ limit: '6mb' }));
+app.use((req,_res,next)=>{req.ia=configDaRequisicao(req);next();});
+const chamarIAReq=(req,prompt,temperatura)=>chamarIA(prompt,temperatura,{config:req.ia});
 app.get('/', (_req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
 app.get('/api/health', (_req, res) => res.json({ ok: true, openaiConfigurada: IA.configurada, ...statusIA(IA) }));
 app.get('/api/version', (_req, res) => {
@@ -132,8 +134,8 @@ function avaliarLocalmente(d = {}) {
 
 app.post('/api/avaliar', async (req, res) => {
   const d = req.body || {};
-  if (!IA.configurada) return res.json(avaliarLocalmente(d));
-  try { res.json({ ...limparAvaliacao(await chamarIA(montarPrompt(d))), modo: IA.provedor }); }
+  if (!req.ia.configurada) return res.json(avaliarLocalmente(d));
+  try { res.json({ ...limparAvaliacao(await chamarIAReq(req,montarPrompt(d))), modo: req.ia.provedor }); }
   catch (e) {
     const f = avaliarLocalmente(d); f.modo = 'local-fallback';
     f.alertas.unshift(`A análise com IA não pôde ser concluída (${e.message}). Usei a sugestão local; revise as notas.`);
@@ -176,8 +178,8 @@ function limparExtracao(r = {}) {
 }
 
 app.post('/api/extrair-relatorio', async (req, res) => {
-  if (!IA.configurada) return res.status(401).json({ erro: `${IA.variavelChave} não configurada no servidor.` });
-  try { res.json(limparExtracao(await chamarIA(montarPromptExtracao(req.body || {}), 0))); }
+  if (!req.ia.configurada) return res.status(401).json({ erro: `${req.ia.variavelChave} não configurada no servidor.` });
+  try { res.json(limparExtracao(await chamarIAReq(req,montarPromptExtracao(req.body || {}), 0))); }
   catch (e) { res.status(502).json({ erro: e.message }); }
 });
 

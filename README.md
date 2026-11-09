@@ -22,3 +22,7 @@ Sem `DATABASE_URL`, as turmas ficam em `data/turmas.json` (ignorado pelo git).
 PDFs e dados de alunos NÃO devem ser versionados. O backup vai apenas para o repositório privado `avaliador-p3-proposta-formativa-dados`.
 
 Veja `DEPLOY.md` para publicar no Render.
+
+## Seletor de IA
+
+Com as duas chaves configuradas (`OPENAI_API_KEY` e `ANTHROPIC_API_KEY`), a janela de login do app tem o campo **Inteligência artificial** (OpenAI ou Claude), e o topo da página tem o seletor **IA** para trocar a qualquer momento. A escolha fica salva no navegador. `IA_PROVEDOR` define só a opção inicial. A janela de login agora é do próprio app (o servidor envia `X-Login-Necessario` em vez de `WWW-Authenticate`).

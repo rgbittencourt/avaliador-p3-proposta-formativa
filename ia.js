@@ -9,6 +9,10 @@
 //   ANTHROPIC_API_KEY  chave da Anthropic       ANTHROPIC_MODEL  (padrão claude-haiku-5-5)
 //   IA_MAX_TOKENS      limite de tokens da resposta (padrão 8192)
 //
+// A tela também pode escolher o provedor a cada chamada pelo cabeçalho
+// X-IA-Provedor (seletor "IA" no topo do app). O servidor só aceita um
+// provedor que tenha chave; senão usa o padrão acima.
+//
 // Sem nenhuma chave, iaConfigurada é false e o app segue com a análise local.
 
 const PROVEDORES = {
@@ -18,8 +22,14 @@ const PROVEDORES = {
 
 const INSTRUCAO_JSON = 'Responda somente com um único objeto JSON válido, sem texto antes ou depois e sem blocos de código.';
 
-function configIA(env = process.env) {
-  let provedor = String(env.IA_PROVEDOR || '').trim().toLowerCase();
+function temChave(env, provedor) {
+  return Boolean(PROVEDORES[provedor] && env[PROVEDORES[provedor].variavelChave]);
+}
+
+// preferido: provedor pedido pela tela (opcional). Só vale se tiver chave.
+function configIA(env = process.env, preferido = '') {
+  const pedido = String(preferido || '').trim().toLowerCase();
+  let provedor = temChave(env, pedido) ? pedido : String(env.IA_PROVEDOR || '').trim().toLowerCase();
   if (!PROVEDORES[provedor]) {
     provedor = env.OPENAI_API_KEY ? 'openai' : env.ANTHROPIC_API_KEY ? 'anthropic' : 'openai';
   }
@@ -109,9 +119,23 @@ async function chamarIA(prompt, temperatura = 0.2, opcoes = {}) {
     : chamarOpenAI(cfg, prompt, temperatura, f);
 }
 
-// Resumo seguro (sem a chave) para o /api/health.
-function statusIA(cfg = configIA()) {
-  return { iaConfigurada: cfg.configurada, iaProvedor: cfg.provedor, iaModelo: cfg.modelo };
+// Provedores com chave configurada, para o seletor da tela.
+function provedoresDisponiveis(env = process.env) {
+  return Object.keys(PROVEDORES).filter(id => temChave(env, id)).map(id => {
+    const c = configIA(env, id);
+    return { id, nome: c.nome, modelo: c.modelo };
+  });
 }
 
-module.exports = { configIA, chamarIA, statusIA, extrairJSON, PROVEDORES };
+// Configuração para uma requisição do Express (respeita o seletor da tela).
+function configDaRequisicao(req, env = process.env) {
+  const pedido = req && typeof req.get === 'function' ? req.get('x-ia-provedor') : '';
+  return configIA(env, pedido);
+}
+
+// Resumo seguro (sem a chave) para o /api/health.
+function statusIA(cfg = configIA(), env = process.env) {
+  return { iaConfigurada: cfg.configurada, iaProvedor: cfg.provedor, iaModelo: cfg.modelo, iaDisponiveis: provedoresDisponiveis(env) };
+}
+
+module.exports = { configIA, configDaRequisicao, chamarIA, statusIA, provedoresDisponiveis, extrairJSON, PROVEDORES };
