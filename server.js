@@ -4,6 +4,7 @@ const path = require('path');
 const Core = require('./public/p3-core.js');
 const db = require('./db');
 const { configIA, configDaRequisicao, chamarIA, statusIA } = require('./ia');
+const { montarPromptCoerencia, limparSaidaCoerencia } = require('./coerencia');
 
 const { RUBRICA, ORDEM } = Core;
 const app = express();
@@ -183,7 +184,37 @@ app.post('/api/extrair-relatorio', async (req, res) => {
   catch (e) { res.status(502).json({ erro: e.message }); }
 });
 
+// ---------- Coerência (complementar, sem pontuação) ----------
+const ASSINATURA_COERENCIA = () => 'Prof. Rogério';
+function atividadeCoerencia(c = {}) {
+  const dinamica = (Array.isArray(c.dinamica) ? c.dinamica : []).map((l, i) =>
+    `Linha ${i + 1}: espaço "${l.espaco || ''}" | atividade "${l.atividade || ''}" | duração "${l.duracao || ''}" | papel do aluno "${l.papelAluno || ''}" | papel do professor "${l.papelProfessor || ''}"`).join('\n');
+  return {
+    nome: 'P3 - Proposta formativa para o seu desafio',
+    produto: 'proposta formativa (planejamento e dinâmica das atividades) para enfrentar o desafio',
+    cadeia: 'desafio -> público-alvo -> objetivo -> conteúdos -> metodologias e dinâmica das atividades -> recursos -> avaliação da aprendizagem -> contribuição para o desafio',
+    criterios: [
+      'Pergunte se, realizada como planejada, a proposta mudaria algo para aquele público no desafio declarado, ou se é uma formação correta, mas genérica.',
+      'Verifique se objetivo, conteúdos e metodologias respondem ao desafio, e se a dinâmica (tempos, papéis, espaços) é viável e adequada ao público e à carga horária.',
+      'Verifique se a avaliação da aprendizagem mostraria se a proposta de fato ajudou no desafio.'
+    ],
+    evidencia: 'Trata-se de uma proposta ainda não aplicada: escreva "a proposta prevê", nunca "na formação você fez".',
+    campos: [
+      ['Nome', c.nome], ['Desafio', c.desafio], ['Público-alvo', c.publicoAlvo], ['Objetivo', c.objetivo],
+      ['Conteúdos', c.conteudos], ['Metodologias e estratégias', c.metodologias], ['Tipo da proposta', c.tipo],
+      ['Carga horária', c.cargaHoraria], ['Número de participantes', c.participantes], ['Recursos e tecnologias', c.recursos],
+      ['Avaliação da aprendizagem', c.avaliacaoTexto], ['Dinâmica das atividades (Parte 2)', dinamica ? '\n' + dinamica : '']
+    ]
+  };
+}
+app.post('/api/analisar-coerencia', async (req, res) => {
+  if (!req.ia.configurada) return res.status(401).json({ erro: `${req.ia.variavelChave} não configurada no servidor. A análise de coerência precisa de IA.` });
+  const campos = req.body || {};
+  try { res.json(limparSaidaCoerencia(await chamarIAReq(req, montarPromptCoerencia(atividadeCoerencia(campos)), 0.25), ASSINATURA_COERENCIA(campos))); }
+  catch (e) { res.status(e.status || 502).json({ erro: e.message }); }
+});
+
 app.use((err, _req, res, _next) => res.status(500).json({ erro: err.message || 'Erro interno.' }));
 
 if (require.main === module) app.listen(PORT, () => console.log(`Avaliador P3 em http://localhost:${PORT}`));
-module.exports = { app, montarPrompt, montarPromptExtracao, limparExtracao, limparAvaliacao, avaliarLocalmente };
+module.exports = { atividadeCoerencia, app, montarPrompt, montarPromptExtracao, limparExtracao, limparAvaliacao, avaliarLocalmente };

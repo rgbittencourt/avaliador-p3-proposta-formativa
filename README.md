@@ -32,3 +32,7 @@ Veja `DEPLOY.md` para publicar no Render.
 ## Seletor de IA
 
 Com as duas chaves configuradas (`OPENAI_API_KEY` e `ANTHROPIC_API_KEY`), a janela de login do app tem o campo **Inteligência artificial** (OpenAI ou Claude), e o topo da página tem o seletor **IA** para trocar a qualquer momento. A escolha fica salva no navegador. `IA_PROVEDOR` define só a opção inicial. A janela de login agora é do próprio app (o servidor envia `X-Login-Necessario` em vez de `WWW-Authenticate`).
+
+## Coerência com o desafio (complementar)
+
+Abaixo do feedback há o bloco de coerência, no modelo do Avaliador P4. Ele explica no topo *coerência de quê, com quê* e gera, numa única análise de IA, um parecer técnico para o professor e um feedback ao estudante. A pergunta central é se o produto, além de bem-feito, é útil para o desafio e para o público-alvo do estudante. Não altera rubrica, nota nem feedback. Os textos são salvos com a avaliação (`analiseCoerencia`, `feedbackCoerencia`). Servidor: `coerencia.js` e `/api/analisar-coerencia`; tela: `public/coerencia-ui.js`.

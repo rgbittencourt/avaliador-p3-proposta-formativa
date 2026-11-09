@@ -276,6 +276,7 @@
       pontuacoes: { ...estado.pontuacoes }, observacoes: { ...estado.observacoes }, justificativas: { ...estado.justificativas },
       total: C.total(po), alertas: alertasAtuais().map((a) => a.texto), alertasManuais: $('alertasManuais').value,
       feedback: $('feedbackOut').value, feedbackEditado: estado.feedbackEditado, statusCorrecao: $('statusCorrecao').value,
+      ...(window.CoerenciaUI ? CoerenciaUI.valores() : {}),
       orientadorOk: C.orientadorCorreto(d.orientador), salvoEm: new Date().toISOString()
     };
   }
@@ -294,12 +295,19 @@
 
   function novaAvaliacao(silencioso) {
     estado.avaliacaoId = null; estado.pontuacoes = {}; estado.observacoes = {}; estado.justificativas = {}; estado.feedbackEditado = false; estado.modo = '';
-    preencher({}); $('feedbackOut').value = ''; $('alertasManuais').value = ''; $('statusCorrecao').value = 'nenhuma';
+    preencher({}); $('feedbackOut').value = ''; $('alertasManuais').value = ''; if (window.CoerenciaUI) CoerenciaUI.limpar(); $('statusCorrecao').value = 'nenhuma';
     $('autoStatus').textContent = ''; $('feedbackStatus').textContent = ''; $('paginasPdf').innerHTML = '';
     marcarRubrica(); desenharNota();
     if (!silencioso) { $('arquivoPdf').value = ''; $('importStatus').textContent = ''; estado.textoPaginas = []; pdfPreviewData = null; }
   }
   $('btnNova').addEventListener('click', () => novaAvaliacao(false));
+
+  // Bloco de coerência (complementar), logo abaixo do Feedback gerado.
+  if (window.CoerenciaUI) CoerenciaUI.montar({ depoisDe: $('feedbackOut').closest('.card'), tagCard: 'div', coletar: () => dados(), api,
+    titulo: 'Coerência da proposta formativa', produto: 'da proposta formativa',
+    oQue: 'Da <b>proposta formativa</b> planejada pelo estudante: objetivo, conteúdos, metodologias, dinâmica das atividades (Parte 2), recursos e avaliação.',
+    comOQue: 'Com o <b>desafio</b> que ele definiu e com o <b>público-alvo</b> indicado na proposta.',
+    aspectos: ['se objetivo, conteúdos e metodologias respondem ao desafio, e não só ao tema;', 'se a dinâmica (tempos, papéis e espaços) é viável e adequada ao público e à carga horária;', 'se a avaliação da aprendizagem mostraria se a proposta de fato ajudou no desafio.'] });
 
   function abrirAvaliacao(id) {
     const a = estado.avaliacoes.find((x) => x.id === id); if (!a) return;
@@ -307,6 +315,7 @@
     estado.pontuacoes = { ...(a.pontuacoes || {}) }; estado.observacoes = { ...(a.observacoes || {}) }; estado.justificativas = { ...(a.justificativas || {}) };
     $('alertasManuais').value = a.alertasManuais || ''; $('feedbackOut').value = a.feedback || ''; estado.feedbackEditado = Boolean(a.feedbackEditado);
     $('statusCorrecao').value = a.statusCorrecao || 'nenhuma';
+    if (window.CoerenciaUI) CoerenciaUI.definir(a);
     marcarRubrica(); desenharNota(); window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
