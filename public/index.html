@@ -159,7 +159,8 @@
   .badge-ok{background:var(--verde);}.badge-pend{background:var(--amarelo);}.badge-err{background:var(--vermelho);}
   .paginas{display:flex;gap:8px;overflow-x:auto;margin-top:10px;padding-bottom:4px;}
   .paginas img{height:150px;border:1px solid var(--cinza-borda);border-radius:6px;background:#fff;cursor:zoom-in;}
-  .pagina-thumb{padding:0;border:0;background:transparent;cursor:zoom-in;border-radius:6px;}
+  .pagina-thumb{padding:0;border:0;background:transparent;cursor:zoom-in;border-radius:6px;position:relative;}
+  .pagina-num{position:absolute;right:4px;bottom:4px;background:rgba(20,40,60,.8);color:#fff;font-size:.7rem;font-weight:700;border-radius:4px;padding:1px 6px;}
   .pagina-thumb img{display:block;height:150px;border:1px solid var(--cinza-borda);border-radius:6px;background:#fff;}
   .pagina-thumb:focus-visible{outline:3px solid var(--azul-header);outline-offset:3px;}
   .pdf-modal[hidden]{display:none;}

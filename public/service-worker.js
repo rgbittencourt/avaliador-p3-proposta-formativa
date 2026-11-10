@@ -1,4 +1,4 @@
-const CACHE = 'avaliador-p3-shell-v14';
+const CACHE = 'avaliador-p3-shell-v15';
 const SHELL = ['/', '/app.js', '/seletor-ia.js', '/coerencia-ui.js', '/p3-core.js', '/extrator.js', '/vendor/pdf.min.js', '/vendor/pdf.worker.min.js', '/manifest.webmanifest', '/favicon.svg', '/assets/icon-192.png', '/assets/icon-512.png'];
 
 self.addEventListener('install', (event) => {

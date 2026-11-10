@@ -180,12 +180,11 @@
       const content = await pg.getTextContent();
       paginas.push(X.paginaDoPdfjs(content));
       textos.push(content.items.map((it) => it.str).join(' '));
-      if (i <= 6) {
-        const vp = pg.getViewport({ scale: 0.35 }); const cv = document.createElement('canvas');
-        cv.width = vp.width; cv.height = vp.height;
-        await pg.render({ canvasContext: cv.getContext('2d'), viewport: vp }).promise;
-        miniaturas.push(cv.toDataURL('image/png'));
-      }
+      // miniatura de todas as páginas (JPEG para não pesar em PDFs longos)
+      const vp = pg.getViewport({ scale: 0.35 }); const cv = document.createElement('canvas');
+      cv.width = vp.width; cv.height = vp.height;
+      await pg.render({ canvasContext: cv.getContext('2d'), viewport: vp }).promise;
+      miniaturas.push(cv.toDataURL('image/jpeg', 0.8));
     }
     return { paginas, textos, miniaturas, n: pdf.numPages, previewData };
   }
@@ -222,7 +221,7 @@
       novaAvaliacao(true);
       preencher(r);
       estado.textoPaginas = textos; estado.extracaoBruta = r; pdfPreviewData = previewData;
-      $('paginasPdf').innerHTML = miniaturas.map((m, i) => `<button type="button" class="pagina-thumb" data-pdf-page="${i + 1}" aria-label="Ampliar página ${i + 1}" title="Clique para ampliar"><img src="${m}" alt="Página ${i + 1}"></button>`).join('');
+      $('paginasPdf').innerHTML = miniaturas.map((m, i) => `<button type="button" class="pagina-thumb" data-pdf-page="${i + 1}" aria-label="Ampliar página ${i + 1}" title="Clique para ampliar"><img src="${m}" alt="Página ${i + 1}"><span class="pagina-num">${i + 1}</span></button>`).join('');
       st.textContent = `PDF lido (${n} página(s)): ${r.dinamica.length} linha(s) na dinâmica. Revise os campos antes de avaliar.`;
       recalcular(true); verificarDuplicidade();
     } catch (err) { st.textContent = 'Não foi possível ler o PDF: ' + err.message; }
