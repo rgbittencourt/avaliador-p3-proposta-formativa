@@ -442,6 +442,13 @@
 
   /* ---------- início ---------- */
   desenharRubrica(); preencher({}); desenharNota();
-  carregarTurmas().catch((e) => { $('turmaStatus').innerHTML = `<div class="alert">Falha ao carregar turmas: ${esc(e.message)}</div>`; });
+  // Link vindo do Fechamento do Portfólio: ?turma=<id>&avaliacao=<id> abre a avaliação direto.
+  const linkQ = new URLSearchParams(location.search);
+  if (linkQ.get('turma')) estado.turmaId = linkQ.get('turma');
+  carregarTurmas().then(() => {
+    const id = linkQ.get('avaliacao'); if (!id) return;
+    if (estado.avaliacoes.some((x) => x.id === id)) abrirAvaliacao(id);
+    else $('turmaStatus').innerHTML = '<div class="alert">A avaliação indicada no link não foi encontrada nesta turma.</div>';
+  }).catch((e) => { $('turmaStatus').innerHTML = `<div class="alert">Falha ao carregar turmas: ${esc(e.message)}</div>`; });
   window.__p3 = { estado, dados, preencher, abrirAvaliacao, gerarRelatorioExecutivo };
 })();
